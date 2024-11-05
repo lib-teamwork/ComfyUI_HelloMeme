@@ -261,9 +261,9 @@ class HMPipelineImage:
         image_pil = Image.fromarray(image_np)
 
         if seed < 0:
-            generator = torch.Generator(device=pipeline.device).manual_seed(random.randint(0, 100000))
+            generator = torch.Generator().manual_seed(random.randint(0, 100000))
         else:
-            generator = torch.Generator(device=pipeline.device).manual_seed(seed)
+            generator = torch.Generator().manual_seed(seed)
 
         result_img = pipeline(
             prompt=[prompt],
@@ -343,11 +343,10 @@ class HMPipelineVideo:
         image_np = (image[0] * 255).cpu().numpy().astype(np.uint8)
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
-
         if seed < 0:
-            generator = torch.Generator(device=pipeline.device).manual_seed(random.randint(0, 100000))
+            generator = torch.Generator().manual_seed(random.randint(0, 100000))
         else:
-            generator = torch.Generator(device=pipeline.device).manual_seed(seed)
+            generator = torch.Generator().manual_seed(seed)
 
         res_frames = pipeline(
             prompt=[prompt],
