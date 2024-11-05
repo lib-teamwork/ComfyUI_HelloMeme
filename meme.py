@@ -1,5 +1,7 @@
 import os
 import os.path as osp
+import random
+
 import folder_paths
 import torch
 import numpy as np
@@ -243,7 +245,8 @@ class HMPipelineImage:
                 "drive_image_params": ("DRIVE_IMAGE_PARAMS",),
                 "prompt": ("STRING", {"default": '(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture'}),
                 "negative_prompt": ("STRING", {"default": ''}),
-                "steps": ("INT", {"default": 25, "min": 1, "max": 10000}),
+                "steps": ("INT", {"default": 25, "min": 1, "max": 1000}),
+                "seed": ("INT", {"default": -1, "min": -1, "max": 100000}),
                 "guidance_scale": ("FLOAT", {"default": 2.0, "min": 0.0, "max": 100.0, "step": 0.01}),
             }
         }
@@ -252,10 +255,16 @@ class HMPipelineImage:
     FUNCTION = "sample"
     CATEGORY = "hellomeme"
 
-    def sample(self, pipeline, image, drive_image_params,  prompt, negative_prompt, steps=25, guidance_scale=2.0):
+    def sample(self, pipeline, image, drive_image_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
         image_np = (image[0] * 255).cpu().numpy().astype(np.uint8)
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
+
+        if seed < 0:
+            generator = torch.Generator(device=pipeline.device).manual_seed(random.randint(0, 100000))
+        else:
+            generator = torch.Generator(device=pipeline.device).manual_seed(seed)
+
         result_img = pipeline(
             prompt=[prompt],
             strength=1.0,
@@ -264,6 +273,7 @@ class HMPipelineImage:
             num_inference_steps=steps,
             negative_prompt=[negative_prompt],
             guidance_scale=guidance_scale,
+            generator=generator,
             output_type='np'
         )
         return (torch.from_numpy(np.clip(result_img[0], 0, 1)), )
@@ -319,7 +329,8 @@ class HMPipelineVideo:
                         "drive_video_params": ("DRIVE_VIDEO_PARAMS",),
                         "prompt": ("STRING", {"default": '(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture'}),
                         "negative_prompt": ("STRING", {"default": ''}),
-                        "steps": ("INT", {"default": 25, "min": 1, "max": 10000}),
+                        "steps": ("INT", {"default": 25, "min": 1, "max": 1000}),
+                        "seed": ("INT", {"default": -1, "min": -1, "max": 100000}),
                         "guidance_scale": ("FLOAT", {"default": 2.0, "min": 0.0, "max": 100.0, "step": 0.01}),
                      }
                 }
@@ -328,10 +339,16 @@ class HMPipelineVideo:
     FUNCTION = "sample"
     CATEGORY = "hellomeme"
 
-    def sample(self, pipeline, image, drive_video_params,  prompt, negative_prompt, steps=25, guidance_scale=2.0):
+    def sample(self, pipeline, image, drive_video_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
         image_np = (image[0] * 255).cpu().numpy().astype(np.uint8)
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
+
+        if seed < 0:
+            generator = torch.Generator(device=pipeline.device).manual_seed(random.randint(0, 100000))
+        else:
+            generator = torch.Generator(device=pipeline.device).manual_seed(seed)
+
         res_frames = pipeline(
             prompt=[prompt],
             strength=1.0,
@@ -340,6 +357,7 @@ class HMPipelineVideo:
             num_inference_steps=steps,
             negative_prompt=[negative_prompt],
             guidance_scale=guidance_scale,
+            generator=generator,
             output_type='np'
         )
         res_frames = [np.clip(x[0], 0, 1) for x in res_frames]
