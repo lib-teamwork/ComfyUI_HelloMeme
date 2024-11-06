@@ -23,6 +23,10 @@
 
 This repository is the official implementation of the [`HelloMeme`](https://arxiv.org/pdf/2410.22901) ComfyUI interface, featuring both image and video generation functionalities. Example workflow files can be found in the `ComfyUI_HelloMeme/workflows` directory. Test images and videos are saved in the `ComfyUI_HelloMeme/examples` directory. Below are screenshots of the interfaces for image and video generation.
 
+## 🔆 New Features/Updates
+
+- ✅ `11/6/2024` The face proportion in the reference image significantly affects the generation quality. We have encapsulated the **recommended image cropping method** used during training into a `CropReferenceImage` Node. Refer to the workflows in the `ComfyUI_HelloMeme/workflows directory`: `hellomeme_video_cropref_workflow.json` and `hellomeme_image_cropref_workflow.json`.
+
 ### Image Generation Interface
 
 <p align="center">

@@ -32,6 +32,7 @@ if missing:
 
 from .hellomeme.utils import (face_params_to_tensor,
                              get_drive_params,
+                             crop_and_resize,
                              get_face_params,
                              load_data_list,
                              load_unet_from_safetensors)
@@ -185,6 +186,35 @@ class GetReferenceImageRT:
 
         ref_rot, ref_trans = face_toolkits['h3dmm'].forward_params(image_np, ref_landmark)
         return (dict(rot=ref_rot, trans=ref_trans), )
+
+class CropReferenceImage:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "face_toolkits": ("FACE_TOOLKITS",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "crop_reference_image"
+    CATEGORY = "hellomeme"
+
+    def crop_reference_image(self, image, face_toolkits):
+        image_np = cv2.cvtColor((image[0] * 255).cpu().numpy().astype(np.uint8), cv2.COLOR_BGR2RGB)
+        image_np = cv2.resize(image_np, (512, 512))
+        print(image_np.shape)
+        face_toolkits['face_aligner'].reset_track()
+        faces = face_toolkits['face_aligner'].forward(image_np)
+        assert len(faces) > 0
+        face = sorted(faces, key=lambda x: (x['face_rect'][2] - x['face_rect'][0]) * (
+                x['face_rect'][3] - x['face_rect'][1]))[-1]
+        ref_landmark = face['pre_kpt_222']
+
+        new_image = crop_and_resize(image_np[np.newaxis, :,:,:], ref_landmark[np.newaxis, :,:], 512, crop=True)[0]
+        new_image = cv2.cvtColor(new_image[0], cv2.COLOR_RGB2BGR)
+        return (torch.from_numpy(new_image[np.newaxis, :,:,:]).float() / 255., )
 
 class GetImageDriveParams:
     @classmethod
@@ -371,6 +401,7 @@ NODE_CLASS_MAPPINGS = {
     "GetVideoDriveParams": GetVideoDriveParams,
     "HMPipelineImage": HMPipelineImage,
     "HMPipelineVideo": HMPipelineVideo,
+    "CropReferenceImage": CropReferenceImage,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -382,4 +413,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "GetVideoDriveParams": "Get Drive Video Parameters",
     "HMPipelineImage": "HelloMeme Image Pipeline",
     "HMPipelineVideo": "HelloMeme Video Pipeline",
+    "CropReferenceImage": "Crop Reference Image",
 }
