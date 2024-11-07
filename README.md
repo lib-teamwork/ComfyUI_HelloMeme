@@ -30,6 +30,13 @@
 
 This repository is the official implementation of the [`HelloMeme`](https://arxiv.org/pdf/2410.22901) ComfyUI interface, featuring both image and video generation functionalities. Example workflow files can be found in the `ComfyUI_HelloMeme/workflows` directory. Test images and videos are saved in the `ComfyUI_HelloMeme/examples` directory. Below are screenshots of the interfaces for image and video generation.
 
+> [!Note]
+> [Custom models should be placed in the directories listed below.](https://github.com/HelloVision/ComfyUI_HelloMeme/issues/5#issuecomment-2461247829)
+> 
+> **Checkpoints** under: ComfyUI/models/checkpoints
+> 
+> **Loras** under: ComfyUI/models/checkpoints
+
 ### Image Generation Interface
 
 <p align="center">
