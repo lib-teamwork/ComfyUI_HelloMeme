@@ -20,7 +20,7 @@ cur_dir = osp.dirname(osp.abspath(__file__))
 installed_packages = [package.name for package in importlib.metadata.distributions()]
 
 REQUIRED = {
-  'diffusers', 'transformers', 'einops', 'opencv-python', 'tqdm', 'pillow', 'onnxruntime', 'onnx', 'safetensors', 'accelerate', 'peft'
+  'diffusers', 'transformers', 'einops', 'opencv-python', 'tqdm', 'pillow', 'onnxruntime-gpu', 'onnx', 'safetensors', 'accelerate', 'peft'
 }
 
 missing = [name for name in REQUIRED if name not in installed_packages]
