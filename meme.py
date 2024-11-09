@@ -343,9 +343,9 @@ class GetVideoDriveParams:
             save_size=512, trans_ratio=trans_ratio)
 
         drive_params = dict(
-            face_parts=face_parts_embedding.unsqueeze(0).to(dtype=dtype),
-            drive_coeff=drive_coeff.unsqueeze(0).to(dtype=dtype),
-            condition=control_heatmaps.unsqueeze(0).to(dtype=dtype),
+            face_parts=face_parts_embedding.unsqueeze(0).to(dtype=dtype, device='cpu'),
+            drive_coeff=drive_coeff.unsqueeze(0).to(dtype=dtype, device='cpu'),
+            condition=control_heatmaps.unsqueeze(0).to(dtype=dtype, device='cpu'),
         )
         return (drive_params, )
 
