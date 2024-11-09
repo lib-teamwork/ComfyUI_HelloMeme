@@ -170,27 +170,15 @@ class HMImagePipeline(StableDiffusionImg2ImgPipeline):
         ref_latents = torch.cat(ref_latents, dim=0)
         ref_latents = self.vae.config.scaling_factor * ref_latents
 
-        # 6. Prepare latent variables
-        # latents = self.prepare_latents(
-        #     ref_latents,
-        #     latent_timestep,
-        #     batch_size,
-        #     num_images_per_prompt,
-        #     prompt_embeds.dtype,
-        #     device,
-        #     generator,
-        # )
+        condition = drive_params['condition'].clone().to(device=device)
+        drive_coeff = drive_params['drive_coeff'].clone().to(device=device)
+        face_parts = drive_params['face_parts'].clone().to(device=device)
 
-        # condition, drive_coeff, face_parts
         if self.do_classifier_free_guidance:
-            drive_params['condition'] = torch.cat([torch.ones_like(drive_params['condition']) * -1, drive_params['condition']], dim=0)
-            drive_params['drive_coeff'] = torch.cat([torch.zeros_like(drive_params['drive_coeff']), drive_params['drive_coeff']], dim=0)
-            drive_params['face_parts'] = torch.cat([torch.zeros_like(drive_params['face_parts']), drive_params['face_parts']], dim=0)
-
-        if hasattr(self, "mp_control"):
-            control_latents = self.mp_control(**drive_params)
-        else:
-            control_latents = None
+            condition = torch.cat([torch.ones_like(condition) * -1, condition], dim=0)
+            drive_coeff = torch.cat([torch.zeros_like(drive_coeff), drive_coeff], dim=0)
+            face_parts = torch.cat([torch.zeros_like(face_parts), face_parts], dim=0)
+        control_latents = self.mp_control(condition=condition, drive_coeff=drive_coeff, face_parts=face_parts)
 
         # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)

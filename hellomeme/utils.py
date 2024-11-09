@@ -146,7 +146,7 @@ def get_face_parts(images, landmarks, save_size=256):
         ret_list.append(np.stack(tmp_part_list, axis=0))
     return np.stack(ret_list, axis=0).transpose(1, 0, 2, 3, 4)
 
-def get_face_params(h3dmm, harkit_bs, frames, landmarks, save_size=512, align=True):
+def get_face_params(h3dmm, harkit_bs, frames, landmarks, save_size=(512, 512), align=True):
     face_parts = []
     for tmp_face_parts_list in get_face_parts(frames, landmarks, save_size=256):
         tmp_face_parts_list = [cv2.GaussianBlur(x, (9, 9), 0) for x in tmp_face_parts_list]
@@ -223,21 +223,11 @@ def det_landmarks(face_aligner, frame_list, save_size=(512, 512), reset=False):
     face_aligner.reset_track()
     return save_frame_list, save_landmark_list
 
-def get_drive_params(face_aligner, h3dmm, harkit_bs, frame_list, save_size, align):
+def get_drive_params(face_aligner, h3dmm, harkit_bs, frame_list, save_size, align=True):
     frame_num = len(frame_list)
     frame_list, landmark_list = det_landmarks(face_aligner, frame_list, save_size=(512, 512), reset=False)
     assert len(frame_list) == frame_num
     return get_face_params(h3dmm, harkit_bs, frame_list, landmark_list, save_size=save_size, align=align)
-
-def load_data_list(data_dir, post_fix='.pickle;.txt'):
-    post_fixs = post_fix.split(';')
-    ret_list = []
-    for root, dirnames, filenames in os.walk(data_dir):
-            for name in filenames:
-                if os.path.splitext(name)[1].lower() in post_fixs and not name.startswith('.'):
-                    data_path = os.path.join(root, name)
-                    ret_list.append(data_path)
-    return ret_list
 
 def crop_and_resize(frames, landmarks, save_size=512, crop=True):
     H, W = frames[0].shape[:2]
@@ -377,3 +367,13 @@ def ff_change_fps(input_video, output_video, fps=15):
     ]
 
     subprocess.run(cmd)
+
+def load_data_list(data_dir, post_fix='.pickle;.txt'):
+    post_fixs = post_fix.split(';')
+    ret_list = []
+    for root, dirnames, filenames in os.walk(data_dir):
+            for name in filenames:
+                if os.path.splitext(name)[1] in post_fixs and not name.startswith('.'):
+                    data_path = os.path.join(root, name)
+                    ret_list.append(data_path)
+    return ret_list
