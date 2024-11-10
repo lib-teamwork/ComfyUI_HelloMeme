@@ -1,16 +1,16 @@
 {
-  "last_node_id": 16,
-  "last_link_id": 24,
+  "last_node_id": 31,
+  "last_link_id": 40,
   "nodes": [
     {
-      "id": 1,
+      "id": 28,
       "type": "HMImagePipelineLoader",
       "pos": {
-        "0": 226,
-        "1": 356
+        "0": 111,
+        "1": 102
       },
       "size": {
-        "0": 315,
+        "0": 352.79998779296875,
         "1": 106
       },
       "flags": {},
@@ -22,7 +22,7 @@
           "name": "HMIMAGEPIPELINE",
           "type": "HMIMAGEPIPELINE",
           "links": [
-            7
+            34
           ],
           "slot_index": 0
         }
@@ -37,11 +37,91 @@
       ]
     },
     {
-      "id": 9,
+      "id": 29,
+      "type": "PreviewImage",
+      "pos": {
+        "0": 1825,
+        "1": 420
+      },
+      "size": [
+        210,
+        246
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 35
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 26,
+      "type": "HMPipelineImage",
+      "pos": {
+        "0": 1407.3828125,
+        "1": 432.0332336425781
+      },
+      "size": {
+        "0": 315,
+        "1": 218
+      },
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipeline",
+          "type": "HMIMAGEPIPELINE",
+          "link": 34
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 39
+        },
+        {
+          "name": "drive_params",
+          "type": "DRIVE_PARAMS",
+          "link": 32
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            35
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HMPipelineImage"
+      },
+      "widgets_values": [
+        "(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture",
+        "",
+        25,
+        467,
+        "randomize",
+        2
+      ]
+    },
+    {
+      "id": 25,
       "type": "LoadImage",
       "pos": {
-        "0": 227,
-        "1": 915
+        "0": 120,
+        "1": 796
       },
       "size": {
         "0": 315,
@@ -56,7 +136,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            18
+            31
           ],
           "slot_index": 0
         },
@@ -78,8 +158,8 @@
       "id": 8,
       "type": "LoadImage",
       "pos": {
-        "0": 233,
-        "1": 536
+        "0": 120,
+        "1": 414
       },
       "size": {
         "0": 315,
@@ -94,7 +174,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            19
+            36
           ],
           "slot_index": 0
         },
@@ -116,8 +196,8 @@
       "id": 2,
       "type": "HMFaceToolkitsLoader",
       "pos": {
-        "0": 211,
-        "1": 180
+        "0": 124,
+        "1": 276
       },
       "size": {
         "0": 315,
@@ -133,8 +213,8 @@
           "type": "FACE_TOOLKITS",
           "links": [
             13,
-            16,
-            20
+            27,
+            37
           ],
           "slot_index": 0
         }
@@ -147,207 +227,11 @@
       ]
     },
     {
-      "id": 10,
-      "type": "PreviewImage",
-      "pos": {
-        "0": 1714,
-        "1": 603
-      },
-      "size": {
-        "0": 210,
-        "1": 246
-      },
-      "flags": {},
-      "order": 9,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 11
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 6,
-      "type": "HMPipelineImage",
-      "pos": {
-        "0": 1311,
-        "1": 561
-      },
-      "size": {
-        "0": 315,
-        "1": 218
-      },
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "pipeline",
-          "type": "HMIMAGEPIPELINE",
-          "link": 7
-        },
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 24
-        },
-        {
-          "name": "drive_image_params",
-          "type": "DRIVE_IMAGE_PARAMS",
-          "link": 15
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            11
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "HMPipelineImage"
-      },
-      "widgets_values": [
-        "(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture",
-        "",
-        25,
-        51131,
-        "randomize",
-        2
-      ]
-    },
-    {
-      "id": 15,
-      "type": "CropReferenceImage",
-      "pos": {
-        "0": 602,
-        "1": 353
-      },
-      "size": {
-        "0": 252,
-        "1": 46
-      },
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 19
-        },
-        {
-          "name": "face_toolkits",
-          "type": "FACE_TOOLKITS",
-          "link": 20
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            21,
-            23,
-            24
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CropReferenceImage"
-      }
-    },
-    {
-      "id": 14,
-      "type": "GetImageDriveParams",
-      "pos": {
-        "0": 847,
-        "1": 617
-      },
-      "size": {
-        "0": 330,
-        "1": 98
-      },
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "face_toolkits",
-          "type": "FACE_TOOLKITS",
-          "link": 16
-        },
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 18
-        },
-        {
-          "name": "ref_rt",
-          "type": "REFRT",
-          "link": 17
-        }
-      ],
-      "outputs": [
-        {
-          "name": "drive_image_params",
-          "type": "DRIVE_IMAGE_PARAMS",
-          "links": [
-            15
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "GetImageDriveParams"
-      },
-      "widgets_values": [
-        0
-      ]
-    },
-    {
-      "id": 16,
-      "type": "PreviewImage",
-      "pos": {
-        "0": 1306,
-        "1": 165
-      },
-      "size": [
-        210,
-        246
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 23
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      }
-    },
-    {
       "id": 11,
       "type": "GetReferenceImageRT",
       "pos": {
-        "0": 961,
-        "1": 327
+        "0": 639,
+        "1": 512
       },
       "size": {
         "0": 241.79998779296875,
@@ -365,7 +249,7 @@
         {
           "name": "image",
           "type": "IMAGE",
-          "link": 21
+          "link": 38
         }
       ],
       "outputs": [
@@ -373,7 +257,7 @@
           "name": "REFRT",
           "type": "REFRT",
           "links": [
-            17
+            26
           ],
           "slot_index": 0
         }
@@ -382,25 +266,125 @@
         "Node name for S&R": "GetReferenceImageRT"
       },
       "widgets_values": []
+    },
+    {
+      "id": 22,
+      "type": "GetVideoDriveParams",
+      "pos": {
+        "0": 960,
+        "1": 552
+      },
+      "size": {
+        "0": 330,
+        "1": 98
+      },
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "face_toolkits",
+          "type": "FACE_TOOLKITS",
+          "link": 27
+        },
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 31
+        },
+        {
+          "name": "ref_rt",
+          "type": "REFRT",
+          "link": 26
+        }
+      ],
+      "outputs": [
+        {
+          "name": "drive_params",
+          "type": "DRIVE_PARAMS",
+          "links": [
+            32
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetVideoDriveParams"
+      },
+      "widgets_values": [
+        0
+      ]
+    },
+    {
+      "id": 31,
+      "type": "PreviewImage",
+      "pos": {
+        "0": 934,
+        "1": 134
+      },
+      "size": [
+        210,
+        246
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 40
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      }
+    },
+    {
+      "id": 30,
+      "type": "CropReferenceImage",
+      "pos": {
+        "0": 488,
+        "1": 306
+      },
+      "size": {
+        "0": 252,
+        "1": 46
+      },
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 36
+        },
+        {
+          "name": "face_toolkits",
+          "type": "FACE_TOOLKITS",
+          "link": 37
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            38,
+            39,
+            40
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CropReferenceImage"
+      }
     }
   ],
   "links": [
-    [
-      7,
-      1,
-      0,
-      6,
-      0,
-      "HMIMAGEPIPELINE"
-    ],
-    [
-      11,
-      6,
-      0,
-      10,
-      0,
-      "IMAGE"
-    ],
     [
       13,
       2,
@@ -410,75 +394,91 @@
       "FACE_TOOLKITS"
     ],
     [
-      15,
-      14,
-      0,
-      6,
-      2,
-      "DRIVE_PARAMS"
-    ],
-    [
-      16,
-      2,
-      0,
-      14,
-      0,
-      "FACE_TOOLKITS"
-    ],
-    [
-      17,
+      26,
       11,
       0,
-      14,
+      22,
       2,
       "REFRT"
     ],
     [
-      18,
-      9,
+      27,
+      2,
       0,
-      14,
+      22,
+      0,
+      "FACE_TOOLKITS"
+    ],
+    [
+      31,
+      25,
+      0,
+      22,
       1,
       "IMAGE"
     ],
     [
-      19,
-      8,
+      32,
+      22,
       0,
-      15,
+      26,
+      2,
+      "DRIVE_PARAMS"
+    ],
+    [
+      34,
+      28,
+      0,
+      26,
+      0,
+      "HMIMAGEPIPELINE"
+    ],
+    [
+      35,
+      26,
+      0,
+      29,
       0,
       "IMAGE"
     ],
     [
-      20,
+      36,
+      8,
+      0,
+      30,
+      0,
+      "IMAGE"
+    ],
+    [
+      37,
       2,
       0,
-      15,
+      30,
       1,
       "FACE_TOOLKITS"
     ],
     [
-      21,
-      15,
+      38,
+      30,
       0,
       11,
       1,
       "IMAGE"
     ],
     [
-      23,
-      15,
+      39,
+      30,
       0,
-      16,
-      0,
+      26,
+      1,
       "IMAGE"
     ],
     [
-      24,
-      15,
+      40,
+      30,
       0,
-      6,
-      1,
+      31,
+      0,
       "IMAGE"
     ]
   ],
@@ -486,10 +486,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.90909090909091,
+      "scale": 0.9090909090909091,
       "offset": [
-        351.63753729960956,
-        23.084463313010133
+        328.0506633321691,
+        3.5667581298829703
       ]
     }
   },

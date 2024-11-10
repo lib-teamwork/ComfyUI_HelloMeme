@@ -11,7 +11,7 @@
       },
       "size": {
         "0": 315,
-        "1": 170
+        "1": 218
       },
       "flags": {},
       "order": 6,
@@ -28,8 +28,8 @@
           "link": 17
         },
         {
-          "name": "drive_video_params",
-          "type": "DRIVE_VIDEO_PARAMS",
+          "name": "drive_params",
+          "type": "DRIVE_PARAMS",
           "link": 29
         }
       ],
@@ -50,6 +50,8 @@
         "(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture",
         "",
         25,
+        97398,
+        "randomize",
         2
       ]
     },
@@ -70,7 +72,7 @@
       "inputs": [],
       "outputs": [
         {
-          "name": "FACE_TOOLKITS",
+          "name": "face_toolkits",
           "type": "FACE_TOOLKITS",
           "links": [
             13,
@@ -114,7 +116,7 @@
       ],
       "outputs": [
         {
-          "name": "REFRT",
+          "name": "ref_rt",
           "type": "REFRT",
           "links": [
             26
@@ -190,7 +192,7 @@
           "hidden": false,
           "paused": false,
           "params": {
-            "filename": "HelloMeme_00001-audio.mp4",
+            "filename": "HelloMeme_00016-audio.mp4",
             "subfolder": "",
             "type": "output",
             "format": "video/h264-mp4",
@@ -233,8 +235,8 @@
       ],
       "outputs": [
         {
-          "name": "drive_video_params",
-          "type": "DRIVE_VIDEO_PARAMS",
+          "name": "drive_params",
+          "type": "DRIVE_PARAMS",
           "links": [
             29
           ],
@@ -265,7 +267,7 @@
       "inputs": [],
       "outputs": [
         {
-          "name": "HMVIDEOPIPELINE",
+          "name": "hm_video_pipeline",
           "type": "HMVIDEOPIPELINE",
           "links": [
             16
@@ -491,10 +493,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1,
+      "scale": 0.9090909090909091,
       "offset": [
-        0,
-        0
+        328.0506633321691,
+        3.5667581298829703
       ]
     }
   },

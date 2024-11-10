@@ -55,6 +55,7 @@ class HMImagePipelineLoader:
             }
         }
     RETURN_TYPES = ("HMIMAGEPIPELINE", )
+    RETURN_NAMES = ("hm_image_pipeline", )
     FUNCTION = "load_pipeline"
     CATEGORY = "hellomeme"
     def load_pipeline(self, checkpoint_path=None, lora_path=None, gpu_id=0):
@@ -102,6 +103,7 @@ class HMVideoPipelineLoader:
         }
 
     RETURN_TYPES = ("HMVIDEOPIPELINE",)
+    RETURN_NAMES = ("hm_video_pipeline",)
     FUNCTION = "load_pipeline"
     CATEGORY = "hellomeme"
 
@@ -146,6 +148,7 @@ class HMFaceToolkitsLoader:
         }
 
     RETURN_TYPES = ("FACE_TOOLKITS",)
+    RETURN_NAMES = ("face_toolkits",)
     FUNCTION = "load_face_toolkits"
     CATEGORY = "hellomeme"
     def load_face_toolkits(self, gpu_id):
@@ -170,6 +173,7 @@ class GetReferenceImageRT:
         }
 
     RETURN_TYPES = ("REFRT",)
+    RETURN_NAMES = ("ref_rt",)
     FUNCTION = "get_reference_image_rt"
     CATEGORY = "hellomeme"
 
@@ -228,8 +232,8 @@ class GetImageDriveParams:
             }
         }
 
-    RETURN_TYPES = ("DRIVE_IMAGE_PARAMS",)
-    RETURN_NAMES = ("drive_image_params",)
+    RETURN_TYPES = ("DRIVE_PARAMS",)
+    RETURN_NAMES = ("drive_params",)
     FUNCTION = "get_face_params"
     CATEGORY = "hellomeme"
     def get_face_params(self, face_toolkits, image, ref_rt, gpu_id):
@@ -272,7 +276,7 @@ class HMPipelineImage:
             "required": {
                 "pipeline": ("HMIMAGEPIPELINE",),
                 "image": ("IMAGE",),
-                "drive_image_params": ("DRIVE_IMAGE_PARAMS",),
+                "drive_params": ("DRIVE_PARAMS",),
                 "prompt": ("STRING", {"default": '(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture'}),
                 "negative_prompt": ("STRING", {"default": ''}),
                 "steps": ("INT", {"default": 25, "min": 1, "max": 1000}),
@@ -285,7 +289,7 @@ class HMPipelineImage:
     FUNCTION = "sample"
     CATEGORY = "hellomeme"
 
-    def sample(self, pipeline, image, drive_image_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
+    def sample(self, pipeline, image, drive_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
         image_np = (image[0] * 255).cpu().numpy().astype(np.uint8)
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
@@ -299,7 +303,7 @@ class HMPipelineImage:
             prompt=[prompt],
             strength=1.0,
             image=image_pil,
-            drive_params=copy.deepcopy(drive_image_params),
+            drive_params=drive_params,
             num_inference_steps=steps,
             negative_prompt=[negative_prompt],
             guidance_scale=guidance_scale,
@@ -319,8 +323,8 @@ class GetVideoDriveParams:
                 "trans_ratio": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01}),
             }
         }
-    RETURN_TYPES = ("DRIVE_VIDEO_PARAMS",)
-    RETURN_NAMES = ("drive_video_params",)
+    RETURN_TYPES = ("DRIVE_PARAMS",)
+    RETURN_NAMES = ("drive_params",)
     FUNCTION = "get_face_params"
     CATEGORY = "hellomeme"
     def get_face_params(self, face_toolkits, images, ref_rt, trans_ratio):
@@ -356,7 +360,7 @@ class HMPipelineVideo:
                     {
                         "pipeline": ("HMVIDEOPIPELINE",),
                         "image": ("IMAGE",),
-                        "drive_video_params": ("DRIVE_VIDEO_PARAMS",),
+                        "drive_params": ("DRIVE_PARAMS",),
                         "prompt": ("STRING", {"default": '(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture'}),
                         "negative_prompt": ("STRING", {"default": ''}),
                         "steps": ("INT", {"default": 25, "min": 1, "max": 1000}),
@@ -369,7 +373,7 @@ class HMPipelineVideo:
     FUNCTION = "sample"
     CATEGORY = "hellomeme"
 
-    def sample(self, pipeline, image, drive_video_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
+    def sample(self, pipeline, image, drive_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
         image_np = (image[0] * 255).cpu().numpy().astype(np.uint8)
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
@@ -382,7 +386,7 @@ class HMPipelineVideo:
             prompt=[prompt],
             strength=1.0,
             image=image_pil,
-            drive_params=copy.deepcopy(drive_video_params),
+            drive_params=drive_params,
             num_inference_steps=steps,
             negative_prompt=[negative_prompt],
             guidance_scale=guidance_scale,
