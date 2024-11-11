@@ -38,7 +38,7 @@ from .hellomeme.utils import (face_params_to_tensor,
                              load_unet_from_safetensors)
 
 from .hellomeme.tools import Hello3DMMPred, HelloARKitBSPred, HelloFaceAlignment, HelloCameraDemo
-from .hellomeme import HMImagePipeline, HMVideoPipeline
+from .hellomeme import HMImagePipeline, HMVideoPipeline, HMVideoSimplePipeline
 from transformers import CLIPVisionModelWithProjection
 
 class HMImagePipelineLoader:
@@ -138,6 +138,56 @@ class HMVideoPipelineLoader:
 
         return (pipeline,)
 
+class HMVideoSimplePipelineLoader:
+    @classmethod
+    def INPUT_TYPES(s):
+        checkpoint_files = sorted(load_data_list(osp.join(cur_dir, '../../models/checkpoints'), '.pt;.pth;.ckpt;.safetensors'))
+        lora_files = sorted(load_data_list(osp.join(cur_dir, '../../models/loras'), '.safetensors'))
+
+        return {
+            "optional": {
+                "checkpoint_path": (['None'] + checkpoint_files, ),
+                "lora_path": (['None'] + lora_files, ),
+                "gpu_id": ("INT", {"default": 0}),
+            }
+        }
+
+    RETURN_TYPES = ("HMVIDEOPIPELINE",)
+    RETURN_NAMES = ("hm_video_pipeline",)
+    FUNCTION = "load_pipeline"
+    CATEGORY = "hellomeme"
+
+    def load_pipeline(self, checkpoint_path=None, lora_path=None, gpu_id=0):
+        dtype = torch.float16
+        if gpu_id >= 0:
+            device = torch.device("cuda:{}".format(gpu_id))
+        else:
+            device = torch.device("cpu")
+        pipeline = HMVideoSimplePipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5").to(dtype=dtype,
+                                                                                                     device=device)
+        pipeline.caryomitosis()
+
+        ### load customized checkpoint or lora here:
+        ## checkpoints
+
+        if checkpoint_path and osp.isfile(checkpoint_path):
+            if checkpoint_path.endswith('.safetensors'):
+                state_dict = load_unet_from_safetensors(checkpoint_path, pipeline.unet_ref.config)
+                pipeline.unet.load_state_dict(state_dict, strict=False)
+            elif osp.splitext(checkpoint_path)[-1] in ['.pt', '.pth', '.ckpt']:
+                state_dict = torch.load(checkpoint_path)
+                pipeline.unet.load_state_dict(state_dict, strict=False)
+            else:
+                print("Invalid checkpoint path", checkpoint_path)
+
+        ### lora
+        if lora_path and osp.isfile(lora_path):
+            pipeline.load_lora_weights(osp.dirname(lora_path), weight_name=osp.basename(lora_path), adapter_name="lora")
+
+        pipeline.insert_hm_modules(dtype=dtype, device=device)
+
+        return (pipeline,)
+
 class HMFaceToolkitsLoader:
     @classmethod
     def INPUT_TYPES(s):
@@ -180,7 +230,7 @@ class GetReferenceImageRT:
     def get_reference_image_rt(self, face_toolkits, image):
         image_np = cv2.cvtColor((image[0] * 255).cpu().numpy().astype(np.uint8), cv2.COLOR_BGR2RGB)
         image_np = cv2.resize(image_np, (512, 512))
-        print(image_np.shape)
+        # print(image_np.shape)
         face_toolkits['face_aligner'].reset_track()
         faces = face_toolkits['face_aligner'].forward(image_np)
         assert len(faces) > 0
@@ -208,7 +258,7 @@ class CropReferenceImage:
     def crop_reference_image(self, image, face_toolkits):
         image_np = cv2.cvtColor((image[0] * 255).cpu().numpy().astype(np.uint8), cv2.COLOR_BGR2RGB)
         image_np = cv2.resize(image_np, (512, 512))
-        print(image_np.shape)
+        # print(image_np.shape)
         face_toolkits['face_aligner'].reset_track()
         faces = face_toolkits['face_aligner'].forward(image_np)
         assert len(faces) > 0
@@ -228,7 +278,6 @@ class GetImageDriveParams:
                 "face_toolkits": ("FACE_TOOLKITS",),
                 "image": ("IMAGE",),
                 "ref_rt": ("REFRT",),
-                "gpu_id": ("INT", {"default": 0})
             }
         }
 
@@ -236,9 +285,8 @@ class GetImageDriveParams:
     RETURN_NAMES = ("drive_params",)
     FUNCTION = "get_face_params"
     CATEGORY = "hellomeme"
-    def get_face_params(self, face_toolkits, image, ref_rt, gpu_id):
+    def get_face_params(self, face_toolkits, image, ref_rt):
         dtype = torch.float16
-        device = torch.device(f'cuda:{gpu_id}')
 
         image_np = cv2.cvtColor((image[0] * 255).cpu().numpy().astype(np.uint8), cv2.COLOR_BGR2RGB)
 
@@ -263,9 +311,9 @@ class GetImageDriveParams:
                                                                        save_size=512, trans_ratio=0.0)
 
         drive_params = dict(
-            face_parts=face_parts_embedding.unsqueeze(0).to(dtype=dtype, device=device),
-            drive_coeff=drive_coeff.unsqueeze(0).to(dtype=dtype, device=device),
-            condition=control_heatmaps.unsqueeze(0).to(dtype=dtype, device=device),
+            face_parts=face_parts_embedding.unsqueeze(0).to(dtype=dtype),
+            drive_coeff=drive_coeff.unsqueeze(0).to(dtype=dtype),
+            condition=control_heatmaps.unsqueeze(0).to(dtype=dtype),
         )
         return (drive_params, )
 
@@ -274,8 +322,8 @@ class HMPipelineImage:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "pipeline": ("HMIMAGEPIPELINE",),
-                "image": ("IMAGE",),
+                "hm_image_pipeline": ("HMIMAGEPIPELINE",),
+                "ref_image": ("IMAGE",),
                 "drive_params": ("DRIVE_PARAMS",),
                 "prompt": ("STRING", {"default": '(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture'}),
                 "negative_prompt": ("STRING", {"default": ''}),
@@ -289,8 +337,8 @@ class HMPipelineImage:
     FUNCTION = "sample"
     CATEGORY = "hellomeme"
 
-    def sample(self, pipeline, image, drive_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
-        image_np = (image[0] * 255).cpu().numpy().astype(np.uint8)
+    def sample(self, hm_image_pipeline, ref_image, drive_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
+        image_np = (ref_image[0] * 255).cpu().numpy().astype(np.uint8)
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
 
@@ -299,7 +347,7 @@ class HMPipelineImage:
         else:
             generator = torch.Generator().manual_seed(seed)
 
-        result_img = pipeline(
+        result_img = hm_image_pipeline(
             prompt=[prompt],
             strength=1.0,
             image=image_pil,
@@ -358,8 +406,8 @@ class HMPipelineVideo:
     def INPUT_TYPES(s):
         return {"required":
                     {
-                        "pipeline": ("HMVIDEOPIPELINE",),
-                        "image": ("IMAGE",),
+                        "hm_video_pipeline": ("HMVIDEOPIPELINE",),
+                        "ref_image": ("IMAGE",),
                         "drive_params": ("DRIVE_PARAMS",),
                         "prompt": ("STRING", {"default": '(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture'}),
                         "negative_prompt": ("STRING", {"default": ''}),
@@ -373,8 +421,8 @@ class HMPipelineVideo:
     FUNCTION = "sample"
     CATEGORY = "hellomeme"
 
-    def sample(self, pipeline, image, drive_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
-        image_np = (image[0] * 255).cpu().numpy().astype(np.uint8)
+    def sample(self, hm_video_pipeline, ref_image, drive_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
+        image_np = (ref_image[0] * 255).cpu().numpy().astype(np.uint8)
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
         if seed < 0:
@@ -382,7 +430,7 @@ class HMPipelineVideo:
         else:
             generator = torch.Generator().manual_seed(seed)
 
-        res_frames = pipeline(
+        res_frames = hm_video_pipeline(
             prompt=[prompt],
             strength=1.0,
             image=image_pil,
@@ -399,6 +447,7 @@ class HMPipelineVideo:
 NODE_CLASS_MAPPINGS = {
     "HMImagePipelineLoader": HMImagePipelineLoader,
     "HMVideoPipelineLoader": HMVideoPipelineLoader,
+    "HMVideoSimplePipelineLoader": HMVideoSimplePipelineLoader,
     "HMFaceToolkitsLoader": HMFaceToolkitsLoader,
     "GetReferenceImageRT": GetReferenceImageRT,
     "GetImageDriveParams": GetImageDriveParams,
@@ -411,6 +460,7 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "HMImagePipelineLoader": "Load HelloMemeImage Pipeline",
     "HMVideoPipelineLoader": "Load HelloMemeVideo Pipeline",
+    "HMVideoSimplePipelineLoader": "Load HelloMemeVideoSimple Pipeline",
     "HMFaceToolkitsLoader": "Load Face Toolkits",
     "GetReferenceImageT": "Get Reference Image Translation",
     "GetImageDriveParams": "Get Drive Image Parameters",
