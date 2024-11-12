@@ -49,7 +49,7 @@ class HMImagePipelineLoader:
 
         return {
             "optional": {
-                "checkpoint_path": (['None'] + checkpoint_files, ),
+                "checkpoint_path": (['SD1.5'] + checkpoint_files, ),
                 "lora_path": (['None'] + lora_files, ),
                 "gpu_id": ("INT", {"default": 0}),
             }
@@ -96,9 +96,10 @@ class HMVideoPipelineLoader:
 
         return {
             "optional": {
-                "checkpoint_path": (['None'] + checkpoint_files, ),
+                "checkpoint_path": (['SD1.5'] + checkpoint_files, ),
                 "lora_path": (['None'] + lora_files, ),
-                "gpu_id": ("INT", {"default": 0}),
+                "patch_frames": ([12, 16], ),
+                "gpu_id": ("INT", {"default": 0}, ),
             }
         }
 
@@ -107,7 +108,7 @@ class HMVideoPipelineLoader:
     FUNCTION = "load_pipeline"
     CATEGORY = "hellomeme"
 
-    def load_pipeline(self, checkpoint_path=None, lora_path=None, gpu_id=0):
+    def load_pipeline(self, checkpoint_path=None, lora_path=None, patch_frames=12, gpu_id=0):
         dtype = torch.float16
         if gpu_id >= 0:
             device = torch.device("cuda:{}".format(gpu_id))
@@ -115,7 +116,7 @@ class HMVideoPipelineLoader:
             device = torch.device("cpu")
         pipeline = HMVideoPipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5").to(dtype=dtype,
                                                                                                      device=device)
-        pipeline.caryomitosis()
+        pipeline.caryomitosis(patch_frames=patch_frames)
 
         ### load customized checkpoint or lora here:
         ## checkpoints
@@ -146,7 +147,7 @@ class HMVideoSimplePipelineLoader:
 
         return {
             "optional": {
-                "checkpoint_path": (['None'] + checkpoint_files, ),
+                "checkpoint_path": (['SD1.5'] + checkpoint_files, ),
                 "lora_path": (['None'] + lora_files, ),
                 "gpu_id": ("INT", {"default": 0}),
             }
@@ -217,8 +218,8 @@ class GetReferenceImageRT:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "face_toolkits": ("FACE_TOOLKITS",),
                 "image": ("IMAGE",),
+                "face_toolkits": ("FACE_TOOLKITS",),
             }
         }
 
@@ -227,7 +228,7 @@ class GetReferenceImageRT:
     FUNCTION = "get_reference_image_rt"
     CATEGORY = "hellomeme"
 
-    def get_reference_image_rt(self, face_toolkits, image):
+    def get_reference_image_rt(self, image, face_toolkits):
         image_np = cv2.cvtColor((image[0] * 255).cpu().numpy().astype(np.uint8), cv2.COLOR_BGR2RGB)
         image_np = cv2.resize(image_np, (512, 512))
         # print(image_np.shape)

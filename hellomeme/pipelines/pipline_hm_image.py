@@ -26,7 +26,7 @@ from ..models import HMDenoising3D, HMControlNet
 from ..models import HMReferenceAdapter
 
 class HMImagePipeline(StableDiffusionImg2ImgPipeline):
-    def caryomitosis(self,):
+    def caryomitosis(self, **kwargs):
         if not hasattr(self, "unet_ref"):
             self.unet_ref = HMDenoising3D.from_unet2d(self.unet)
         if not isinstance(self.unet, HMDenoising3D):
