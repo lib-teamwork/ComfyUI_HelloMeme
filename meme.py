@@ -2,12 +2,10 @@ import os
 import os.path as osp
 import random
 
-import folder_paths
 import torch
 import numpy as np
 import cv2
 import sys
-import copy
 
 
 from PIL import Image
@@ -31,11 +29,13 @@ if missing:
     subprocess.check_call([python, '-m', 'pip', 'install', *missing], stdout=subprocess.DEVNULL)
 
 from .hellomeme.utils import (face_params_to_tensor,
-                             get_drive_params,
-                             crop_and_resize,
-                             get_face_params,
-                             load_data_list,
-                             load_unet_from_safetensors)
+                              gen_control_heatmaps,
+                              get_drive_params,
+                              crop_and_resize,
+                              get_face_params,
+                              load_data_list,
+                              load_unet_from_safetensors
+                              )
 
 from .hellomeme.tools import Hello3DMMPred, HelloARKitBSPred, HelloFaceAlignment, HelloCameraDemo
 from .hellomeme import HMImagePipeline, HMVideoPipeline, HMVideoSimplePipeline
@@ -305,15 +305,13 @@ class GetImageDriveParams:
                                                                                 save_size=(512, 512),
                                                                                 align=False)
 
-        face_parts_embedding, control_heatmaps = face_params_to_tensor(face_toolkits['image_encoder'], face_toolkits['h3dmm'],
-                                                                       drive_face_parts,
-                                                                       drive_rot, drive_trans, ref_rt['trans'],
-                                                                       save_size=512, trans_ratio=0.0)
+        face_parts_embedding = face_params_to_tensor(face_toolkits['image_encoder'], drive_face_parts)
 
         drive_params = dict(
-            face_parts=face_parts_embedding.unsqueeze(0).to(dtype=dtype),
-            drive_coeff=drive_coeff.unsqueeze(0).to(dtype=dtype),
-            condition=control_heatmaps.unsqueeze(0).to(dtype=dtype),
+            face_parts=face_parts_embedding.unsqueeze(0).to(dtype=dtype, device='cpu'),
+            drive_coeff=drive_coeff.unsqueeze(0).to(dtype=dtype, device='cpu'),
+            drive_rot=drive_rot,
+            drive_trans=drive_trans,
         )
         return (drive_params, )
 
@@ -324,6 +322,8 @@ class HMPipelineImage:
             "required": {
                 "hm_image_pipeline": ("HMIMAGEPIPELINE",),
                 "ref_image": ("IMAGE",),
+                "ref_rt": ("REFRT",),
+                "trans_ratio": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "drive_params": ("DRIVE_PARAMS",),
                 "prompt": ("STRING", {"default": '(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture'}),
                 "negative_prompt": ("STRING", {"default": ''}),
@@ -337,10 +337,16 @@ class HMPipelineImage:
     FUNCTION = "sample"
     CATEGORY = "hellomeme"
 
-    def sample(self, hm_image_pipeline, ref_image, drive_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
+    def sample(self, hm_image_pipeline, ref_image, ref_rt, trans_ratio, drive_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
         image_np = (ref_image[0] * 255).cpu().numpy().astype(np.uint8)
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
+
+        drive_rot = drive_params['drive_rot']
+        drive_trans = drive_params['drive_trans']
+
+        condition = gen_control_heatmaps(drive_rot, drive_trans, ref_rt['trans'], 512, trans_ratio)
+        drive_params['condition'] = condition.unsqueeze(0).to(dtype=torch.float16, device='cpu')
 
         if seed < 0:
             generator = torch.Generator().manual_seed(random.randint(0, 100000))
@@ -367,15 +373,13 @@ class GetVideoDriveParams:
             "required": {
                 "face_toolkits": ("FACE_TOOLKITS",),
                 "images": ("IMAGE",),
-                "ref_rt": ("REFRT",),
-                "trans_ratio": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01}),
             }
         }
     RETURN_TYPES = ("DRIVE_PARAMS",)
     RETURN_NAMES = ("drive_params",)
     FUNCTION = "get_face_params"
     CATEGORY = "hellomeme"
-    def get_face_params(self, face_toolkits, images, ref_rt, trans_ratio):
+    def get_face_params(self, face_toolkits, images):
         dtype = torch.float16
 
         frame_list = [cv2.cvtColor((frame * 255).cpu().numpy().astype(np.uint8), cv2.COLOR_BGR2RGB) for frame in images]
@@ -388,16 +392,13 @@ class GetVideoDriveParams:
                                                                                    save_size=512,
                                                                                    align=True)
         face_toolkits['face_aligner'].reset_track()
-        face_parts_embedding, control_heatmaps = face_params_to_tensor(
-            face_toolkits['image_encoder'], face_toolkits['h3dmm'],
-            drive_face_parts,
-            drive_rot, drive_trans, ref_rt['trans'],
-            save_size=512, trans_ratio=trans_ratio)
+        face_parts_embedding = face_params_to_tensor(face_toolkits['image_encoder'], drive_face_parts)
 
         drive_params = dict(
             face_parts=face_parts_embedding.unsqueeze(0).to(dtype=dtype, device='cpu'),
             drive_coeff=drive_coeff.unsqueeze(0).to(dtype=dtype, device='cpu'),
-            condition=control_heatmaps.unsqueeze(0).to(dtype=dtype, device='cpu'),
+            drive_rot=drive_rot,
+            drive_trans=drive_trans,
         )
         return (drive_params, )
 
@@ -408,6 +409,8 @@ class HMPipelineVideo:
                     {
                         "hm_video_pipeline": ("HMVIDEOPIPELINE",),
                         "ref_image": ("IMAGE",),
+                        "ref_rt": ("REFRT",),
+                        "trans_ratio": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01}),
                         "drive_params": ("DRIVE_PARAMS",),
                         "prompt": ("STRING", {"default": '(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture'}),
                         "negative_prompt": ("STRING", {"default": ''}),
@@ -421,7 +424,7 @@ class HMPipelineVideo:
     FUNCTION = "sample"
     CATEGORY = "hellomeme"
 
-    def sample(self, hm_video_pipeline, ref_image, drive_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
+    def sample(self, hm_video_pipeline, ref_image, ref_rt, trans_ratio, drive_params,  prompt, negative_prompt, steps=25, seed=-1, guidance_scale=2.0):
         image_np = (ref_image[0] * 255).cpu().numpy().astype(np.uint8)
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
@@ -429,6 +432,12 @@ class HMPipelineVideo:
             generator = torch.Generator().manual_seed(random.randint(0, 100000))
         else:
             generator = torch.Generator().manual_seed(seed)
+
+        drive_rot = drive_params['drive_rot']
+        drive_trans = drive_params['drive_trans']
+
+        condition = gen_control_heatmaps(drive_rot, drive_trans, ref_rt['trans'], 512, trans_ratio)
+        drive_params['condition'] = condition.unsqueeze(0).to(dtype=torch.float16, device='cpu')
 
         res_frames = hm_video_pipeline(
             prompt=[prompt],

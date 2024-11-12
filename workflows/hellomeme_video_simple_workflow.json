@@ -1,17 +1,17 @@
 {
-  "last_node_id": 31,
-  "last_link_id": 40,
+  "last_node_id": 33,
+  "last_link_id": 49,
   "nodes": [
     {
-      "id": 2,
-      "type": "HMFaceToolkitsLoader",
+      "id": 8,
+      "type": "LoadImage",
       "pos": {
-        "0": 106,
-        "1": 301
+        "0": 61,
+        "1": 290
       },
       "size": {
         "0": 315,
-        "1": 58
+        "1": 314
       },
       "flags": {},
       "order": 0,
@@ -19,29 +19,33 @@
       "inputs": [],
       "outputs": [
         {
-          "name": "face_toolkits",
-          "type": "FACE_TOOLKITS",
+          "name": "IMAGE",
+          "type": "IMAGE",
           "links": [
-            13,
-            27,
-            32
+            31
           ],
           "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
         }
       ],
       "properties": {
-        "Node name for S&R": "HMFaceToolkitsLoader"
+        "Node name for S&R": "LoadImage"
       },
       "widgets_values": [
-        0
+        "majicmix2.jpg",
+        "image"
       ]
     },
     {
       "id": 20,
       "type": "VHS_LoadVideoFFmpeg",
       "pos": {
-        "0": 95,
-        "1": 822
+        "0": 66,
+        "1": 835
       },
       "size": {
         "0": 303.46875,
@@ -69,7 +73,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            28
+            43
           ],
           "slot_index": 0
         },
@@ -120,15 +124,15 @@
       }
     },
     {
-      "id": 8,
-      "type": "LoadImage",
+      "id": 2,
+      "type": "HMFaceToolkitsLoader",
       "pos": {
-        "0": 92,
-        "1": 441
+        "0": 61,
+        "1": 697
       },
       "size": {
         "0": 315,
-        "1": 314
+        "1": 58
       },
       "flags": {},
       "order": 2,
@@ -136,60 +140,29 @@
       "inputs": [],
       "outputs": [
         {
-          "name": "IMAGE",
-          "type": "IMAGE",
+          "name": "face_toolkits",
+          "type": "FACE_TOOLKITS",
           "links": [
-            31
+            13,
+            32,
+            42
           ],
           "slot_index": 0
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null
         }
       ],
       "properties": {
-        "Node name for S&R": "LoadImage"
+        "Node name for S&R": "HMFaceToolkitsLoader"
       },
       "widgets_values": [
-        "majicmix2.jpg",
-        "image"
+        0
       ]
-    },
-    {
-      "id": 26,
-      "type": "PreviewImage",
-      "pos": {
-        "0": 949,
-        "1": 36
-      },
-      "size": {
-        "0": 210,
-        "1": 246
-      },
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 34
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
     },
     {
       "id": 25,
       "type": "CropReferenceImage",
       "pos": {
-        "0": 480,
-        "1": 279
+        "0": 447,
+        "1": 498
       },
       "size": {
         "0": 252,
@@ -215,9 +188,9 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            33,
             34,
-            37
+            37,
+            46
           ],
           "slot_index": 0
         }
@@ -228,18 +201,45 @@
       "widgets_values": []
     },
     {
+      "id": 26,
+      "type": "PreviewImage",
+      "pos": {
+        "0": 795,
+        "1": 121
+      },
+      "size": {
+        "0": 210,
+        "1": 246
+      },
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 34
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
       "id": 11,
       "type": "GetReferenceImageRT",
       "pos": {
-        "0": 769,
-        "1": 415
+        "0": 749,
+        "1": 546
       },
       "size": {
         "0": 241.79998779296875,
         "1": 46
       },
       "flags": {},
-      "order": 6,
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
@@ -258,7 +258,7 @@
           "name": "ref_rt",
           "type": "REFRT",
           "links": [
-            26
+            47
           ],
           "slot_index": 0
         }
@@ -269,11 +269,111 @@
       "widgets_values": []
     },
     {
+      "id": 32,
+      "type": "HMPipelineVideo",
+      "pos": {
+        "0": 1106,
+        "1": 463
+      },
+      "size": {
+        "0": 315,
+        "1": 262
+      },
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "hm_video_pipeline",
+          "type": "HMVIDEOPIPELINE",
+          "link": 49
+        },
+        {
+          "name": "ref_image",
+          "type": "IMAGE",
+          "link": 46
+        },
+        {
+          "name": "ref_rt",
+          "type": "REFRT",
+          "link": 47
+        },
+        {
+          "name": "drive_params",
+          "type": "DRIVE_PARAMS",
+          "link": 48
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            44
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HMPipelineVideo"
+      },
+      "widgets_values": [
+        0,
+        "(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture",
+        "",
+        25,
+        28524,
+        "randomize",
+        2
+      ]
+    },
+    {
+      "id": 31,
+      "type": "GetVideoDriveParams",
+      "pos": {
+        "0": 447,
+        "1": 745
+      },
+      "size": {
+        "0": 330,
+        "1": 46
+      },
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "face_toolkits",
+          "type": "FACE_TOOLKITS",
+          "link": 42
+        },
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 43
+        }
+      ],
+      "outputs": [
+        {
+          "name": "drive_params",
+          "type": "DRIVE_PARAMS",
+          "links": [
+            48
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetVideoDriveParams"
+      },
+      "widgets_values": []
+    },
+    {
       "id": 21,
       "type": "VHS_VideoCombine",
       "pos": {
-        "0": 1856,
-        "1": 546
+        "0": 1502,
+        "1": 613
       },
       "size": [
         214.7587890625,
@@ -286,7 +386,7 @@
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 24
+          "link": 44
         },
         {
           "name": "audio",
@@ -331,7 +431,7 @@
           "hidden": false,
           "paused": false,
           "params": {
-            "filename": "HelloMeme_00065-audio.mp4",
+            "filename": "HelloMeme_00068-audio.mp4",
             "subfolder": "",
             "type": "output",
             "format": "video/h264-mp4",
@@ -342,112 +442,11 @@
       }
     },
     {
-      "id": 15,
-      "type": "HMPipelineVideo",
-      "pos": {
-        "0": 1443,
-        "1": 271
-      },
-      "size": {
-        "0": 315,
-        "1": 218
-      },
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "hm_video_pipeline",
-          "type": "HMVIDEOPIPELINE",
-          "link": 40
-        },
-        {
-          "name": "ref_image",
-          "type": "IMAGE",
-          "link": 33
-        },
-        {
-          "name": "drive_params",
-          "type": "DRIVE_PARAMS",
-          "link": 29
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            24
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "HMPipelineVideo"
-      },
-      "widgets_values": [
-        "(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture",
-        "",
-        25,
-        77866,
-        "randomize",
-        2
-      ]
-    },
-    {
-      "id": 22,
-      "type": "GetVideoDriveParams",
-      "pos": {
-        "0": 1025,
-        "1": 557
-      },
-      "size": {
-        "0": 330,
-        "1": 98
-      },
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "face_toolkits",
-          "type": "FACE_TOOLKITS",
-          "link": 27
-        },
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 28
-        },
-        {
-          "name": "ref_rt",
-          "type": "REFRT",
-          "link": 26
-        }
-      ],
-      "outputs": [
-        {
-          "name": "drive_params",
-          "type": "DRIVE_PARAMS",
-          "links": [
-            29
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "GetVideoDriveParams"
-      },
-      "widgets_values": [
-        0.2
-      ]
-    },
-    {
-      "id": 31,
+      "id": 33,
       "type": "HMVideoSimplePipelineLoader",
       "pos": {
-        "0": 91,
-        "1": 85
+        "0": 59,
+        "1": 118
       },
       "size": {
         "0": 428.4000244140625,
@@ -462,7 +461,7 @@
           "name": "hm_video_pipeline",
           "type": "HMVIDEOPIPELINE",
           "links": [
-            40
+            49
           ],
           "slot_index": 0
         }
@@ -487,52 +486,12 @@
       "FACE_TOOLKITS"
     ],
     [
-      24,
-      15,
-      0,
-      21,
-      0,
-      "IMAGE"
-    ],
-    [
       25,
       20,
       2,
       21,
       1,
       "AUDIO"
-    ],
-    [
-      26,
-      11,
-      0,
-      22,
-      2,
-      "REFRT"
-    ],
-    [
-      27,
-      2,
-      0,
-      22,
-      0,
-      "FACE_TOOLKITS"
-    ],
-    [
-      28,
-      20,
-      0,
-      22,
-      1,
-      "IMAGE"
-    ],
-    [
-      29,
-      22,
-      0,
-      15,
-      2,
-      "DRIVE_PARAMS"
     ],
     [
       31,
@@ -551,14 +510,6 @@
       "FACE_TOOLKITS"
     ],
     [
-      33,
-      25,
-      0,
-      15,
-      1,
-      "IMAGE"
-    ],
-    [
       34,
       25,
       0,
@@ -575,10 +526,58 @@
       "IMAGE"
     ],
     [
-      40,
+      42,
+      2,
+      0,
       31,
       0,
-      15,
+      "FACE_TOOLKITS"
+    ],
+    [
+      43,
+      20,
+      0,
+      31,
+      1,
+      "IMAGE"
+    ],
+    [
+      44,
+      32,
+      0,
+      21,
+      0,
+      "IMAGE"
+    ],
+    [
+      46,
+      25,
+      0,
+      32,
+      1,
+      "IMAGE"
+    ],
+    [
+      47,
+      11,
+      0,
+      32,
+      2,
+      "REFRT"
+    ],
+    [
+      48,
+      31,
+      0,
+      32,
+      3,
+      "DRIVE_PARAMS"
+    ],
+    [
+      49,
+      33,
+      0,
+      32,
       0,
       "HMVIDEOPIPELINE"
     ]
@@ -587,10 +586,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.8264462809917354,
+      "scale": 1,
       "offset": [
-        509.5058815371377,
-        98.92725456392243
+        265.78003215780683,
+        -30.4541044667626
       ]
     }
   },
