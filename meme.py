@@ -206,7 +206,7 @@ class HMFaceToolkitsLoader:
         dtype = torch.float16
         device = torch.device(f'cuda:{gpu_id}')
 
-        face_aligner = HelloCameraDemo(face_alignment_module=HelloFaceAlignment(gpu_id=gpu_id), reset=True)
+        face_aligner = HelloCameraDemo(face_alignment_module=HelloFaceAlignment(gpu_id=gpu_id), reset=False)
         harkit_bs = HelloARKitBSPred(gpu_id=gpu_id)
         h3dmm = Hello3DMMPred(gpu_id=gpu_id)
         clip_image_encoder = CLIPVisionModelWithProjection.from_pretrained(
