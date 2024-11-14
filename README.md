@@ -24,7 +24,8 @@
 ## 🔆 New Features/Updates
 - ✅ `11/14/2024` Added the `HMControlNet2` module, which uses the `PD-FGC` motion module to extract facial expression information (`drive_exp2`); restructured the ComfyUI interface; and optimized VRAM usage.
 
-[![YouTube Demo](https://img.youtube.com/vi/ZvoMHyRm310/0.jpg)](https://www.youtube.com/watch?v=ZvoMHyRm310)
+
+     [![YouTube Demo](https://img.youtube.com/vi/ZvoMHyRm310/0.jpg)](https://www.youtube.com/watch?v=ZvoMHyRm310)
 
 - ✅ `11/12/2024` Added a newly fine-tuned version of [`Animatediff`](https://huggingface.co/songkey/hm_animatediff_frame12) with a patch size of 12, which uses less VRAM (Tested on 2080Ti).
 - ✅ `11/11/2024` ~~Optimized VRAM usage and added `HMVideoSimplePipeline` (`workflows/hellomeme_video_simple_workflow.json`), which doesn’t use Animatediff and can run on machines with less than 12G VRAM.~~
