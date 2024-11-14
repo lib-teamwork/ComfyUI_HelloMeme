@@ -121,8 +121,9 @@ face_temp = np.array([[0.50951539, 0.40128625], [0.29259476, 0.40203411], [0.721
 
 
 def get_drive_pose(toolkits, frames, landmarks, save_size=512, align=True):
+    if isinstance(landmarks, list): landmarks = np.stack(landmarks, axis=0)
     if align:
-        new_frames, new_landmarks = crop_and_resize(np.stack(frames, axis=0), np.stack(landmarks, axis=0),
+        new_frames, new_landmarks = crop_and_resize(np.stack(frames, axis=0), landmarks,
                                                     save_size=save_size, crop=False)
     else:
         new_frames, new_landmarks = frames, landmarks
@@ -217,7 +218,7 @@ def det_landmarks(face_aligner, frame_list):
             pbar.update()
 
     assert len(save_frame_list) > 0
-    save_landmark_list = np.stack(save_landmark_list, axis=0).astype(np.float16)
+    save_landmark_list = np.stack(save_landmark_list, axis=0)
     face_aligner.reset_track()
     return save_frame_list, save_landmark_list
 
