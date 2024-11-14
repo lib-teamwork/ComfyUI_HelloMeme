@@ -176,7 +176,6 @@ class HMFaceToolkitsLoader:
             ),
         )
 
-
 class CropPortrait:
     @classmethod
     def INPUT_TYPES(s):
