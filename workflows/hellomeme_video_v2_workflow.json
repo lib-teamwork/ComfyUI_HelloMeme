@@ -1,87 +1,63 @@
 {
-  "last_node_id": 34,
-  "last_link_id": 52,
+  "last_node_id": 56,
+  "last_link_id": 114,
   "nodes": [
     {
-      "id": 25,
-      "type": "CropReferenceImage",
+      "id": 44,
+      "type": "GetDrivePose",
       "pos": {
-        "0": 447,
-        "1": 498
+        "0": 852,
+        "1": 661
       },
       "size": {
-        "0": 252,
-        "1": 46
-      },
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 31
-        },
-        {
-          "name": "face_toolkits",
-          "type": "FACE_TOOLKITS",
-          "link": 32
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            34,
-            46,
-            50
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CropReferenceImage"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 26,
-      "type": "PreviewImage",
-      "pos": {
-        "0": 795,
-        "1": 121
-      },
-      "size": {
-        "0": 210,
-        "1": 246
+        "0": 304.79998779296875,
+        "1": 66
       },
       "flags": {},
       "order": 6,
       "mode": 0,
       "inputs": [
         {
+          "name": "face_toolkits",
+          "type": "FACE_TOOLKITS",
+          "link": 65
+        },
+        {
           "name": "images",
           "type": "IMAGE",
-          "link": 34
+          "link": 83
+        },
+        {
+          "name": "landmarks",
+          "type": "FACELANDMARKS222",
+          "link": 64
         }
       ],
-      "outputs": [],
+      "outputs": [
+        {
+          "name": "drive_pose",
+          "type": "DRIVE_POSE",
+          "links": [
+            100
+          ],
+          "slot_index": 0
+        }
+      ],
       "properties": {
-        "Node name for S&R": "PreviewImage"
+        "Node name for S&R": "GetDrivePose"
       },
       "widgets_values": []
     },
     {
-      "id": 32,
+      "id": 53,
       "type": "HMPipelineVideo",
       "pos": {
-        "0": 1106,
-        "1": 463
+        "0": 1258,
+        "1": 562
       },
       "size": {
         "0": 315,
-        "1": 262
+        "1": 326
       },
       "flags": {},
       "order": 8,
@@ -90,22 +66,34 @@
         {
           "name": "hm_video_pipeline",
           "type": "HMVIDEOPIPELINE",
-          "link": 52
+          "link": 98
+        },
+        {
+          "name": "face_toolkits",
+          "type": "FACE_TOOLKITS",
+          "link": 97
         },
         {
           "name": "ref_image",
           "type": "IMAGE",
-          "link": 46
+          "link": 99
         },
         {
-          "name": "ref_rt",
-          "type": "REFRT",
-          "link": 47
+          "name": "drive_pose",
+          "type": "DRIVE_POSE",
+          "link": 100
         },
         {
-          "name": "drive_params",
-          "type": "DRIVE_PARAMS",
-          "link": 48
+          "name": "drive_exp",
+          "type": "DRIVE_EXPRESSION",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "drive_exp2",
+          "type": "DRIVE_EXPRESSION2",
+          "link": 111,
+          "shape": 7
         }
       ],
       "outputs": [
@@ -113,7 +101,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            44
+            96
           ],
           "slot_index": 0
         }
@@ -123,65 +111,104 @@
       },
       "widgets_values": [
         0,
+        4,
         "(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture",
         "",
         25,
-        13113,
-        "randomize",
+        98354,
+        "fixed",
         2
       ]
     },
     {
-      "id": 31,
-      "type": "GetVideoDriveParams",
+      "id": 8,
+      "type": "LoadImage",
       "pos": {
-        "0": 447,
-        "1": 745
+        "0": 24,
+        "1": 133
       },
       "size": {
-        "0": 330,
+        "0": 426.5283508300781,
+        "1": 476.4518127441406
+      },
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            56
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "majicmix2.jpg",
+        "image"
+      ]
+    },
+    {
+      "id": 39,
+      "type": "CropPortrait",
+      "pos": {
+        "0": 516,
+        "1": 537
+      },
+      "size": {
+        "0": 241.79998779296875,
         "1": 46
       },
       "flags": {},
-      "order": 5,
+      "order": 4,
       "mode": 0,
       "inputs": [
         {
-          "name": "face_toolkits",
-          "type": "FACE_TOOLKITS",
-          "link": 42
+          "name": "image",
+          "type": "IMAGE",
+          "link": 56
         },
         {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 43
+          "name": "face_toolkits",
+          "type": "FACE_TOOLKITS",
+          "link": 57
         }
       ],
       "outputs": [
         {
-          "name": "drive_params",
-          "type": "DRIVE_PARAMS",
+          "name": "IMAGE",
+          "type": "IMAGE",
           "links": [
-            48
+            99
           ],
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "GetVideoDriveParams"
+        "Node name for S&R": "CropPortrait"
       },
       "widgets_values": []
     },
     {
-      "id": 21,
+      "id": 52,
       "type": "VHS_VideoCombine",
       "pos": {
-        "0": 1502,
-        "1": 613
+        "0": 1658,
+        "1": 894
       },
       "size": [
-        214.7587890625,
-        518.7587890625
+        289.33306884765625,
+        593.3330688476562
       ],
       "flags": {},
       "order": 9,
@@ -190,12 +217,12 @@
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 44
+          "link": 96
         },
         {
           "name": "audio",
           "type": "AUDIO",
-          "link": 25,
+          "link": 92,
           "shape": 7
         },
         {
@@ -215,7 +242,7 @@
         {
           "name": "Filenames",
           "type": "VHS_FILENAMES",
-          "links": []
+          "links": null
         }
       ],
       "properties": {
@@ -224,10 +251,10 @@
       "widgets_values": {
         "frame_rate": 15,
         "loop_count": 0,
-        "filename_prefix": "HelloMeme",
+        "filename_prefix": "AnimateDiff",
         "format": "video/h264-mp4",
         "pix_fmt": "yuv420p",
-        "crf": 19,
+        "crf": 18,
         "save_metadata": true,
         "pingpong": false,
         "save_output": true,
@@ -235,7 +262,7 @@
           "hidden": false,
           "paused": false,
           "params": {
-            "filename": "HelloMeme_00073-audio.mp4",
+            "filename": "AnimateDiff_00026-audio.mp4",
             "subfolder": "",
             "type": "output",
             "format": "video/h264-mp4",
@@ -246,81 +273,90 @@
       }
     },
     {
-      "id": 8,
-      "type": "LoadImage",
+      "id": 56,
+      "type": "GetDriveExpression2",
       "pos": {
-        "0": 61,
-        "1": 290
+        "0": 852,
+        "1": 801
       },
       "size": {
-        "0": 315,
-        "1": 314
-      },
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            31
-          ],
-          "slot_index": 0
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "majicmix2.jpg",
-        "image"
-      ]
-    },
-    {
-      "id": 11,
-      "type": "GetReferenceImageRT",
-      "pos": {
-        "0": 749,
-        "1": 546
-      },
-      "size": {
-        "0": 241.79998779296875,
-        "1": 46
+        "0": 304.79998779296875,
+        "1": 66
       },
       "flags": {},
       "order": 7,
       "mode": 0,
       "inputs": [
         {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 50
-        },
-        {
           "name": "face_toolkits",
           "type": "FACE_TOOLKITS",
-          "link": 51
+          "link": 114
+        },
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 112
+        },
+        {
+          "name": "landmarks",
+          "type": "FACELANDMARKS222",
+          "link": 113
         }
       ],
       "outputs": [
         {
-          "name": "ref_rt",
-          "type": "REFRT",
+          "name": "drive_exp2",
+          "type": "DRIVE_EXPRESSION2",
           "links": [
-            47
+            111
           ],
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "GetReferenceImageRT"
+        "Node name for S&R": "GetDriveExpression2"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 43,
+      "type": "GetFaceLandmarks",
+      "pos": {
+        "0": 465,
+        "1": 771
+      },
+      "size": {
+        "0": 292.20001220703125,
+        "1": 46
+      },
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "face_toolkits",
+          "type": "FACE_TOOLKITS",
+          "link": 62
+        },
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 82
+        }
+      ],
+      "outputs": [
+        {
+          "name": "landmarks",
+          "type": "FACELANDMARKS222",
+          "links": [
+            64,
+            113
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetFaceLandmarks"
       },
       "widgets_values": []
     },
@@ -328,8 +364,8 @@
       "id": 2,
       "type": "HMFaceToolkitsLoader",
       "pos": {
-        "0": 61,
-        "1": 697
+        "0": 43,
+        "1": 699
       },
       "size": {
         "0": 315,
@@ -344,9 +380,11 @@
           "name": "face_toolkits",
           "type": "FACE_TOOLKITS",
           "links": [
-            32,
-            42,
-            51
+            57,
+            62,
+            65,
+            97,
+            114
           ],
           "slot_index": 0
         }
@@ -359,18 +397,53 @@
       ]
     },
     {
-      "id": 20,
-      "type": "VHS_LoadVideoFFmpeg",
+      "id": 49,
+      "type": "HMVideoPipelineLoader",
       "pos": {
-        "0": 66,
-        "1": 835
+        "0": 849,
+        "1": 375
       },
-      "size": [
-        303.46875,
-        535.46875
-      ],
+      "size": {
+        "0": 352.79998779296875,
+        "1": 130
+      },
       "flags": {},
       "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "hm_video_pipeline",
+          "type": "HMVIDEOPIPELINE",
+          "links": [
+            98
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HMVideoPipelineLoader"
+      },
+      "widgets_values": [
+        "SD1.5",
+        "None",
+        12,
+        0
+      ]
+    },
+    {
+      "id": 48,
+      "type": "VHS_LoadVideo",
+      "pos": {
+        "0": 75,
+        "1": 900
+      },
+      "size": [
+        247.455078125,
+        503.455078125
+      ],
+      "flags": {},
+      "order": 3,
       "mode": 0,
       "inputs": [
         {
@@ -391,20 +464,22 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            43
+            82,
+            83,
+            112
           ],
           "slot_index": 0
         },
         {
-          "name": "mask",
-          "type": "MASK",
+          "name": "frame_count",
+          "type": "INT",
           "links": null
         },
         {
           "name": "audio",
           "type": "AUDIO",
           "links": [
-            25
+            92
           ],
           "slot_index": 2
         },
@@ -415,7 +490,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "VHS_LoadVideoFFmpeg"
+        "Node name for S&R": "VHS_LoadVideo"
       },
       "widgets_values": {
         "video": "jgz.mp4",
@@ -424,7 +499,8 @@
         "custom_width": 512,
         "custom_height": 512,
         "frame_load_cap": 0,
-        "start_time": 0,
+        "skip_first_frames": 0,
+        "select_every_nth": 1,
         "choose video to upload": "image",
         "videopreview": {
           "hidden": false,
@@ -432,7 +508,8 @@
           "params": {
             "force_rate": 15,
             "frame_load_cap": 0,
-            "start_time": 0,
+            "skip_first_frames": 0,
+            "select_every_nth": 1,
             "filename": "jgz.mp4",
             "type": "input",
             "format": "video/mp4"
@@ -440,156 +517,154 @@
           "muted": false
         }
       }
-    },
-    {
-      "id": 34,
-      "type": "HMVideoSimplePipelineLoader",
-      "pos": {
-        "0": 56,
-        "1": 85
-      },
-      "size": {
-        "0": 428.4000244140625,
-        "1": 106
-      },
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "hm_video_pipeline",
-          "type": "HMVIDEOPIPELINE",
-          "links": [
-            52
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "HMVideoSimplePipelineLoader"
-      },
-      "widgets_values": [
-        "SD1.5",
-        "None",
-        0
-      ]
     }
   ],
   "links": [
     [
-      25,
-      20,
+      56,
+      8,
+      0,
+      39,
+      0,
+      "IMAGE"
+    ],
+    [
+      57,
       2,
-      21,
+      0,
+      39,
+      1,
+      "FACE_TOOLKITS"
+    ],
+    [
+      62,
+      2,
+      0,
+      43,
+      0,
+      "FACE_TOOLKITS"
+    ],
+    [
+      64,
+      43,
+      0,
+      44,
+      2,
+      "FACELANDMARKS222"
+    ],
+    [
+      65,
+      2,
+      0,
+      44,
+      0,
+      "FACE_TOOLKITS"
+    ],
+    [
+      82,
+      48,
+      0,
+      43,
+      1,
+      "IMAGE"
+    ],
+    [
+      83,
+      48,
+      0,
+      44,
+      1,
+      "IMAGE"
+    ],
+    [
+      92,
+      48,
+      2,
+      52,
       1,
       "AUDIO"
     ],
     [
-      31,
-      8,
+      96,
+      53,
       0,
-      25,
-      0,
-      "IMAGE"
-    ],
-    [
-      32,
-      2,
-      0,
-      25,
-      1,
-      "FACE_TOOLKITS"
-    ],
-    [
-      34,
-      25,
-      0,
-      26,
-      0,
-      "IMAGE"
-    ],
-    [
-      42,
-      2,
-      0,
-      31,
-      0,
-      "FACE_TOOLKITS"
-    ],
-    [
-      43,
-      20,
-      0,
-      31,
-      1,
-      "IMAGE"
-    ],
-    [
-      44,
-      32,
-      0,
-      21,
-      0,
-      "IMAGE"
-    ],
-    [
-      46,
-      25,
-      0,
-      32,
-      1,
-      "IMAGE"
-    ],
-    [
-      47,
-      11,
-      0,
-      32,
-      2,
-      "REFRT"
-    ],
-    [
-      48,
-      31,
-      0,
-      32,
-      3,
-      "DRIVE_PARAMS"
-    ],
-    [
-      50,
-      25,
-      0,
-      11,
-      0,
-      "IMAGE"
-    ],
-    [
-      51,
-      2,
-      0,
-      11,
-      1,
-      "FACE_TOOLKITS"
-    ],
-    [
       52,
-      34,
       0,
-      32,
+      "IMAGE"
+    ],
+    [
+      97,
+      2,
+      0,
+      53,
+      1,
+      "FACE_TOOLKITS"
+    ],
+    [
+      98,
+      49,
+      0,
+      53,
       0,
       "HMVIDEOPIPELINE"
+    ],
+    [
+      99,
+      39,
+      0,
+      53,
+      2,
+      "IMAGE"
+    ],
+    [
+      100,
+      44,
+      0,
+      53,
+      3,
+      "DRIVE_POSE"
+    ],
+    [
+      111,
+      56,
+      0,
+      53,
+      5,
+      "DRIVE_EXPRESSION2"
+    ],
+    [
+      112,
+      48,
+      0,
+      56,
+      1,
+      "IMAGE"
+    ],
+    [
+      113,
+      43,
+      0,
+      56,
+      2,
+      "FACELANDMARKS222"
+    ],
+    [
+      114,
+      2,
+      0,
+      56,
+      0,
+      "FACE_TOOLKITS"
     ]
   ],
   "groups": [],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.8264462809917354,
+      "scale": 0.7513148009015777,
       "offset": [
-        483.3601798628852,
-        79.12268905130395
+        760.8618864750447,
+        109.23033266581292
       ]
     }
   },

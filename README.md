@@ -22,8 +22,12 @@
 
 
 ## 🔆 New Features/Updates
+- ✅ `11/14/2024` Added the `HMControlNet2` module, which uses the `PD-FGC` motion module to extract facial expression information (`drive_exp2`); restructured the ComfyUI interface; and optimized VRAM usage.
+
+[![YouTube Demo](https://img.youtube.com/vi/ZvoMHyRm310/0.jpg)](https://www.youtube.com/watch?v=ZvoMHyRm310)
+
 - ✅ `11/12/2024` Added a newly fine-tuned version of [`Animatediff`](https://huggingface.co/songkey/hm_animatediff_frame12) with a patch size of 12, which uses less VRAM (Tested on 2080Ti).
-- ✅ `11/11/2024` Optimized VRAM usage and added `HMVideoSimplePipeline` (`workflows/hellomeme_video_simple_workflow.json`), which doesn’t use Animatediff and can run on machines with less than 12G VRAM.
+- ✅ `11/11/2024` ~~Optimized VRAM usage and added `HMVideoSimplePipeline` (`workflows/hellomeme_video_simple_workflow.json`), which doesn’t use Animatediff and can run on machines with less than 12G VRAM.~~
 - ✅ `11/6/2024` The face proportion in the reference image significantly affects the generation quality. We have encapsulated the **recommended image cropping method** used during training into a `CropReferenceImage` Node. Refer to the workflows in the `ComfyUI_HelloMeme/workflows directory`: `hellomeme_video_cropref_workflow.json` and `hellomeme_image_cropref_workflow.json`.
 
 
@@ -41,12 +45,12 @@ This repository is the official implementation of the [`HelloMeme`](https://arxi
 ### Image Generation Interface
 
 <p align="center">
-  <img src="workflows/hellomeme_image_example.jpg" alt="image_generation_interface">
+  <img src="workflows/hellomeme_image_example.png" alt="image_generation_interface">
 </p>
 
 ### Video Generation Interface
 
 <p align="center">
-  <img src="workflows/hellomeme_video_example.jpg" alt="video_generation_interface">
+  <img src="workflows/hellomeme_video_example.png" alt="video_generation_interface">
 </p>
 
