@@ -1,20 +1,56 @@
 {
-  "last_node_id": 63,
-  "last_link_id": 129,
+  "last_node_id": 66,
+  "last_link_id": 136,
   "nodes": [
+    {
+      "id": 2,
+      "type": "HMFaceToolkitsLoader",
+      "pos": [
+        43,
+        699
+      ],
+      "size": [
+        315,
+        58
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "face_toolkits",
+          "type": "FACE_TOOLKITS",
+          "links": [
+            57,
+            62,
+            65,
+            119,
+            132
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HMFaceToolkitsLoader"
+      },
+      "widgets_values": [
+        0
+      ]
+    },
     {
       "id": 39,
       "type": "CropPortrait",
-      "pos": {
-        "0": 516,
-        "1": 537
-      },
-      "size": {
-        "0": 241.79998779296875,
-        "1": 46
-      },
+      "pos": [
+        516,
+        537
+      ],
+      "size": [
+        241.79998779296875,
+        46
+      ],
       "flags": {},
-      "order": 5,
+      "order": 6,
       "mode": 0,
       "inputs": [
         {
@@ -44,18 +80,60 @@
       "widgets_values": []
     },
     {
+      "id": 43,
+      "type": "GetFaceLandmarks",
+      "pos": [
+        465,
+        771
+      ],
+      "size": [
+        292.20001220703125,
+        46
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "face_toolkits",
+          "type": "FACE_TOOLKITS",
+          "link": 62
+        },
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 115
+        }
+      ],
+      "outputs": [
+        {
+          "name": "landmarks",
+          "type": "FACELANDMARKS222",
+          "links": [
+            64,
+            130
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetFaceLandmarks"
+      },
+      "widgets_values": []
+    },
+    {
       "id": 44,
       "type": "GetDrivePose",
-      "pos": {
-        "0": 852,
-        "1": 661
-      },
-      "size": {
-        "0": 304.79998779296875,
-        "1": 66
-      },
+      "pos": [
+        852,
+        661
+      ],
+      "size": [
+        304.79998779296875,
+        66
+      ],
       "flags": {},
-      "order": 6,
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
@@ -90,18 +168,58 @@
       "widgets_values": []
     },
     {
+      "id": 57,
+      "type": "LoadImage",
+      "pos": [
+        45,
+        867
+      ],
+      "size": [
+        315,
+        314
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            115,
+            116,
+            131
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "yao.jpg",
+        "image"
+      ]
+    },
+    {
       "id": 58,
       "type": "HMPipelineImage",
-      "pos": {
-        "0": 1274,
-        "1": 584
-      },
-      "size": {
-        "0": 315,
-        "1": 302
-      },
+      "pos": [
+        1274,
+        584
+      ],
+      "size": [
+        315,
+        302
+      ],
       "flags": {},
-      "order": 8,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
@@ -127,13 +245,13 @@
         {
           "name": "drive_exp",
           "type": "DRIVE_EXPRESSION",
-          "link": 124,
+          "link": null,
           "shape": 7
         },
         {
           "name": "drive_exp2",
           "type": "DRIVE_EXPRESSION2",
-          "link": null,
+          "link": 133,
           "shape": 7
         }
       ],
@@ -142,9 +260,14 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            122
+            134
           ],
           "slot_index": 0
+        },
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": null
         }
       ],
       "properties": {
@@ -155,7 +278,7 @@
         "(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture",
         "",
         25,
-        15604,
+        39876,
         "randomize",
         2
       ]
@@ -163,22 +286,22 @@
     {
       "id": 59,
       "type": "PreviewImage",
-      "pos": {
-        "0": 1688,
-        "1": 584
-      },
-      "size": {
-        "0": 210,
-        "1": 246
-      },
+      "pos": [
+        2040,
+        610
+      ],
+      "size": [
+        210,
+        246
+      ],
       "flags": {},
-      "order": 9,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 122
+          "link": 135
         }
       ],
       "outputs": [],
@@ -188,176 +311,12 @@
       "widgets_values": []
     },
     {
-      "id": 57,
-      "type": "LoadImage",
-      "pos": {
-        "0": 45,
-        "1": 867
-      },
-      "size": {
-        "0": 315,
-        "1": 314
-      },
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            115,
-            116,
-            125
-          ],
-          "slot_index": 0
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "yao.jpg",
-        "image"
-      ]
-    },
-    {
-      "id": 43,
-      "type": "GetFaceLandmarks",
-      "pos": {
-        "0": 465,
-        "1": 771
-      },
-      "size": {
-        "0": 292.20001220703125,
-        "1": 46
-      },
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "face_toolkits",
-          "type": "FACE_TOOLKITS",
-          "link": 62
-        },
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 115
-        }
-      ],
-      "outputs": [
-        {
-          "name": "landmarks",
-          "type": "FACELANDMARKS222",
-          "links": [
-            64,
-            126
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "GetFaceLandmarks"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 2,
-      "type": "HMFaceToolkitsLoader",
-      "pos": {
-        "0": 43,
-        "1": 699
-      },
-      "size": {
-        "0": 315,
-        "1": 58
-      },
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "face_toolkits",
-          "type": "FACE_TOOLKITS",
-          "links": [
-            57,
-            62,
-            65,
-            119,
-            127
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "HMFaceToolkitsLoader"
-      },
-      "widgets_values": [
-        0
-      ]
-    },
-    {
-      "id": 61,
-      "type": "GetDriveExpression",
-      "pos": {
-        "0": 857,
-        "1": 823
-      },
-      "size": {
-        "0": 292.20001220703125,
-        "1": 66
-      },
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "face_toolkits",
-          "type": "FACE_TOOLKITS",
-          "link": 127
-        },
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 125
-        },
-        {
-          "name": "landmarks",
-          "type": "FACELANDMARKS222",
-          "link": 126
-        }
-      ],
-      "outputs": [
-        {
-          "name": "drive_exp",
-          "type": "DRIVE_EXPRESSION",
-          "links": [
-            124
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "GetDriveExpression"
-      },
-      "widgets_values": []
-    },
-    {
       "id": 62,
       "type": "LoadImage",
-      "pos": {
-        "0": 52,
-        "1": 289
-      },
+      "pos": [
+        52,
+        289
+      ],
       "size": [
         315,
         314
@@ -392,14 +351,14 @@
     {
       "id": 63,
       "type": "HMImagePipelineLoader",
-      "pos": {
-        "0": 817,
-        "1": 358
-      },
-      "size": {
-        "0": 352.79998779296875,
-        "1": 130
-      },
+      "pos": [
+        817,
+        358
+      ],
+      "size": [
+        352.79998779296875,
+        130
+      ],
       "flags": {},
       "order": 3,
       "mode": 0,
@@ -423,6 +382,125 @@
         "same as checkpoint",
         0
       ]
+    },
+    {
+      "id": 64,
+      "type": "GetDriveExpression2",
+      "pos": [
+        850,
+        827
+      ],
+      "size": [
+        304.79998779296875,
+        66
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "face_toolkits",
+          "type": "FACE_TOOLKITS",
+          "link": 132
+        },
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 131
+        },
+        {
+          "name": "landmarks",
+          "type": "FACELANDMARKS222",
+          "link": 130
+        }
+      ],
+      "outputs": [
+        {
+          "name": "drive_exp2",
+          "type": "DRIVE_EXPRESSION2",
+          "links": [
+            133
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetDriveExpression2"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 65,
+      "type": "UpscaleModelLoader",
+      "pos": [
+        1282,
+        374
+      ],
+      "size": [
+        315,
+        58
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "UPSCALE_MODEL",
+          "type": "UPSCALE_MODEL",
+          "links": [
+            136
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UpscaleModelLoader"
+      },
+      "widgets_values": [
+        "RealESRGAN_x2.pth"
+      ]
+    },
+    {
+      "id": 66,
+      "type": "ImageUpscaleWithModel",
+      "pos": [
+        1644,
+        503
+      ],
+      "size": [
+        340.20001220703125,
+        46
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "upscale_model",
+          "type": "UPSCALE_MODEL",
+          "link": 136
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 134
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            135
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageUpscaleWithModel"
+      },
+      "widgets_values": []
     }
   ],
   "links": [
@@ -499,46 +577,6 @@
       "DRIVE_POSE"
     ],
     [
-      122,
-      58,
-      0,
-      59,
-      0,
-      "IMAGE"
-    ],
-    [
-      124,
-      61,
-      0,
-      58,
-      4,
-      "DRIVE_EXPRESSION"
-    ],
-    [
-      125,
-      57,
-      0,
-      61,
-      1,
-      "IMAGE"
-    ],
-    [
-      126,
-      43,
-      0,
-      61,
-      2,
-      "FACELANDMARKS222"
-    ],
-    [
-      127,
-      2,
-      0,
-      61,
-      0,
-      "FACE_TOOLKITS"
-    ],
-    [
       128,
       62,
       0,
@@ -553,6 +591,62 @@
       58,
       0,
       "HMIMAGEPIPELINE"
+    ],
+    [
+      130,
+      43,
+      0,
+      64,
+      2,
+      "FACELANDMARKS222"
+    ],
+    [
+      131,
+      57,
+      0,
+      64,
+      1,
+      "IMAGE"
+    ],
+    [
+      132,
+      2,
+      0,
+      64,
+      0,
+      "FACE_TOOLKITS"
+    ],
+    [
+      133,
+      64,
+      0,
+      58,
+      5,
+      "DRIVE_EXPRESSION2"
+    ],
+    [
+      134,
+      58,
+      0,
+      66,
+      1,
+      "IMAGE"
+    ],
+    [
+      135,
+      66,
+      0,
+      59,
+      0,
+      "IMAGE"
+    ],
+    [
+      136,
+      65,
+      0,
+      66,
+      0,
+      "UPSCALE_MODEL"
     ]
   ],
   "groups": [],
@@ -561,8 +655,8 @@
     "ds": {
       "scale": 0.8264462809917359,
       "offset": [
-        161.88372916607042,
-        -64.01845981558924
+        12.461092318990445,
+        -168.96359429993936
       ]
     }
   },

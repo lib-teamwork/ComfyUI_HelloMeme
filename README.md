@@ -22,8 +22,11 @@
 
 
 ## 🔆 New Features/Updates
-- ✅ `11/14/2024` Added the `HMControlNet2` module, which uses the `PD-FGC` motion module to extract facial expression information (`drive_exp2`); restructured the ComfyUI interface; and optimized VRAM usage.
+- ✅ `11/29/2024` a.Optimize the algorithm; b.Add VAE selection functionality; c.Introduce a super-resolution feature.
 
+     [![YouTube Demo](https://img.youtube.com/vi/fM5nyn6q02Y/0.jpg)](https://www.youtube.com/watch?v=fM5nyn6q02Y)
+
+- ✅ `11/14/2024` Added the `HMControlNet2` module, which uses the `PD-FGC` motion module to extract facial expression information (`drive_exp2`); restructured the ComfyUI interface; and optimized VRAM usage.
 
      [![YouTube Demo](https://img.youtube.com/vi/ZvoMHyRm310/0.jpg)](https://www.youtube.com/watch?v=ZvoMHyRm310)
 
@@ -42,6 +45,19 @@ This repository is the official implementation of the [`HelloMeme`](https://arxi
 > **Checkpoints** under: `ComfyUI/models/checkpoints`
 > 
 > **Loras** under: `ComfyUI/models/checkpoints`
+
+### workflows
+
+| workflow file | Video Generation | Image Generation | HMControlNet | HMControlNet2 | Super-Resolution |
+|---------------|------------------|------------------|-----------|---------------|-----------------|
+| hellomeme_image_workflow.json |                  | ✅                | ✅ |  |  |
+| hellomeme_video_workflow.json | ✅                |                  | ✅ |  |  |
+| hellomeme_image_sr_workflow.json |                  | ✅                | ✅ |  | ✅ |
+| hellomeme_video_sr_workflow.json | ✅                |                  | ✅ |  | ✅ |
+| hellomeme_image_v2_workflow.json |                  | ✅                |  | ✅ |  |
+| hellomeme_video_v2_workflow.json | ✅                |                  |  | ✅ |  |
+| hellomeme_image_v2_sr_workflow.json |                  | ✅                |  | ✅ | ✅ |
+| hellomeme_video_v2_sr_workflow.json | ✅                |                  |  | ✅ | ✅ |
 
 ### Image Generation Interface
 

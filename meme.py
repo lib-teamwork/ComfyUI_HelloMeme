@@ -1,16 +1,18 @@
 import os.path as osp
 import random
 
-import torch
 import numpy as np
 import cv2
 import sys
 
-
 from PIL import Image
 import subprocess
 
+import torch
+from einops import rearrange
+
 import importlib.metadata
+import folder_paths
 
 cur_dir = osp.dirname(osp.abspath(__file__))
 
@@ -33,61 +35,99 @@ from .hellomeme.utils import (get_drive_expression,
                               get_drive_pose,
                               crop_and_resize,
                               det_landmarks,
-                              load_data_list,
-                              load_unet_from_safetensors
+                              get_torch_device,
+                              load_safetensors,
                               )
-
+from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (convert_ldm_unet_checkpoint,
+                                                                    convert_ldm_vae_checkpoint)
 from .hellomeme.tools import Hello3DMMPred, HelloARKitBSPred, HelloFaceAlignment, HelloCameraDemo, FanEncoder
 from .hellomeme import HMImagePipeline, HMVideoPipeline
 from transformers import CLIPVisionModelWithProjection
 
 DEFAULT_PROMPT = '(best quality), highly detailed, ultra-detailed, headshot, person, well-placed five sense organs, looking at the viewer, centered composition, sharp focus, realistic skin texture'
 
+def get_models_files():
+    checkpoint_files = folder_paths.get_filename_list("checkpoints")
+
+    vae_files = folder_paths.get_filename_list("vae")
+    vae_files = ["[vae] " + x for x in vae_files] + \
+                ["[checkpoint] " + x for x in checkpoint_files]
+
+    lora_files = folder_paths.get_filename_list("loras")
+
+    return ['SD1.5'] + checkpoint_files, ['same as checkpoint', 'SD1.5 default vae'] + vae_files, ['None'] + lora_files
+
+def append_pipline_weights(pipeline, checkpoint=None, lora=None, vae=None):
+    ### load customized checkpoint or lora here:
+    ## checkpoints
+
+    raw_stats = None
+    if checkpoint and not checkpoint.startswith('SD1.5'):
+        checkpoint_path = folder_paths.get_full_path_or_raise("checkpoints", checkpoint)
+        if osp.exists(checkpoint_path):
+            print("Loading checkpoint from", checkpoint_path)
+            if checkpoint_path.endswith('.safetensors'):
+                raw_stats = load_safetensors(checkpoint_path)
+            else:
+                raw_stats = torch.load(checkpoint_path)
+
+            if raw_stats:
+                state_dict = convert_ldm_unet_checkpoint(raw_stats, pipeline.unet_ref.config)
+                if hasattr(pipeline, 'unet_pre'):
+                    pipeline.unet_pre.load_state_dict(state_dict, strict=False)
+                pipeline.unet.load_state_dict(state_dict, strict=False)
+
+    if vae and not vae.startswith('SD1.5 default vae'):
+        raw_vae_stats = raw_stats
+        real_vae_path = ''
+        if vae.startswith("[checkpoint] "):
+            real_vae_path = folder_paths.get_full_path_or_raise("checkpoints", vae.replace("[checkpoint] ", ""))
+        elif vae.startswith("[vae] "):
+            real_vae_path = folder_paths.get_full_path_or_raise("vae", vae.replace("[vae] ", ""))
+        if osp.isfile(real_vae_path):
+            print("Loading vae from", real_vae_path)
+            if real_vae_path.endswith('.safetensors'):
+                raw_vae_stats = load_safetensors(real_vae_path)
+            else:
+                raw_vae_stats = torch.load(real_vae_path)
+
+        if raw_vae_stats:
+            vae_state_dict = convert_ldm_vae_checkpoint(raw_vae_stats, pipeline.vae_decode.config)
+            if hasattr(pipeline, 'vae_decode'):
+                pipeline.vae_decode.load_state_dict(vae_state_dict, strict=True)
+
+    ### lora
+    if lora and not lora.startswith('None'):
+        lora_path = folder_paths.get_full_path_or_raise("loras", lora)
+        if osp.exists(lora_path):
+            print("Loading lora from", lora_path)
+            pipeline.load_lora_weights(osp.dirname(lora_path), weight_name=osp.basename(lora_path), adapter_name="lora")
 
 class HMImagePipelineLoader:
     @classmethod
     def INPUT_TYPES(s):
-        checkpoint_files = sorted(load_data_list(osp.join(cur_dir, '../../models/checkpoints'), '.pt;.pth;.ckpt;.safetensors'))
-        lora_files = sorted(load_data_list(osp.join(cur_dir, '../../models/loras'), '.safetensors'))
+        checkpoint_files, vae_files, lora_files = get_models_files()
 
         return {
             "optional": {
-                "checkpoint_path": (['SD1.5'] + checkpoint_files, ),
-                "lora_path": (['None'] + lora_files, ),
-                "gpu_id": ("INT", {"default": 0}),
+                "checkpoint": (checkpoint_files, ),
+                "lora": (lora_files, ),
+                "vae": (vae_files, ),
             }
         }
     RETURN_TYPES = ("HMIMAGEPIPELINE", )
     RETURN_NAMES = ("hm_image_pipeline", )
     FUNCTION = "load_pipeline"
     CATEGORY = "hellomeme"
-    def load_pipeline(self, checkpoint_path=None, lora_path=None, gpu_id=0):
+    def load_pipeline(self, checkpoint=None, lora=None, vae=None):
         dtype = torch.float16
-        if gpu_id >= 0:
-            device = torch.device("cuda:{}".format(gpu_id))
-        else:
-            device = torch.device("cpu")
-        pipeline = HMImagePipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5").to(dtype=dtype, device=device)
+        pipeline = HMImagePipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5")
+        pipeline.to(dtype=dtype)
         pipeline.caryomitosis()
 
-        ### load customized checkpoint or lora here:
-        ## checkpoints
+        append_pipline_weights(pipeline, checkpoint=checkpoint, lora=lora, vae=vae)
 
-        if checkpoint_path and osp.isfile(checkpoint_path):
-            if checkpoint_path.endswith('.safetensors'):
-                state_dict = load_unet_from_safetensors(checkpoint_path, pipeline.unet_ref.config)
-                pipeline.unet.load_state_dict(state_dict, strict=False)
-            elif osp.splitext(checkpoint_path)[-1] in ['.pt', '.pth', '.ckpt']:
-                state_dict = torch.load(checkpoint_path)
-                pipeline.unet.load_state_dict(state_dict, strict=False)
-            else:
-                print("Invalid checkpoint path", checkpoint_path)
-
-        ### lora
-        if lora_path and osp.isfile(lora_path):
-            pipeline.load_lora_weights(osp.dirname(lora_path), weight_name=osp.basename(lora_path), adapter_name="lora")
-
-        pipeline.insert_hm_modules(dtype=dtype, device=device)
+        pipeline.insert_hm_modules(dtype=dtype)
         
         return (pipeline, )
 
@@ -95,15 +135,14 @@ class HMImagePipelineLoader:
 class HMVideoPipelineLoader:
     @classmethod
     def INPUT_TYPES(s):
-        checkpoint_files = sorted(load_data_list(osp.join(cur_dir, '../../models/checkpoints'), '.pt;.pth;.ckpt;.safetensors'))
-        lora_files = sorted(load_data_list(osp.join(cur_dir, '../../models/loras'), '.safetensors'))
+        checkpoint_files, vae_files, lora_files = get_models_files()
 
         return {
             "optional": {
-                "checkpoint_path": (['SD1.5'] + checkpoint_files, ),
-                "lora_path": (['None'] + lora_files, ),
-                "patch_frames": ([12, 16], ),
-                "gpu_id": ("INT", {"default": 0}, ),
+                "checkpoint": (checkpoint_files, ),
+                "lora": (lora_files, ),
+                "vae": (vae_files, ),
+                "patch_frames": ([12], ),
             }
         }
 
@@ -112,34 +151,15 @@ class HMVideoPipelineLoader:
     FUNCTION = "load_pipeline"
     CATEGORY = "hellomeme"
 
-    def load_pipeline(self, checkpoint_path=None, lora_path=None, patch_frames=12, gpu_id=0):
+    def load_pipeline(self, checkpoint=None, lora=None, vae=None, patch_frames=12):
         dtype = torch.float16
-        if gpu_id >= 0:
-            device = torch.device("cuda:{}".format(gpu_id))
-        else:
-            device = torch.device("cpu")
-        pipeline = HMVideoPipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5").to(dtype=dtype,
-                                                                                                     device=device)
+        pipeline = HMVideoPipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5")
+        pipeline.to(dtype=dtype)
         pipeline.caryomitosis(patch_frames=patch_frames)
 
-        ### load customized checkpoint or lora here:
-        ## checkpoints
+        append_pipline_weights(pipeline, checkpoint=checkpoint, lora=lora, vae=vae)
 
-        if checkpoint_path and osp.isfile(checkpoint_path):
-            if checkpoint_path.endswith('.safetensors'):
-                state_dict = load_unet_from_safetensors(checkpoint_path, pipeline.unet_ref.config)
-                pipeline.unet.load_state_dict(state_dict, strict=False)
-            elif osp.splitext(checkpoint_path)[-1] in ['.pt', '.pth', '.ckpt']:
-                state_dict = torch.load(checkpoint_path)
-                pipeline.unet.load_state_dict(state_dict, strict=False)
-            else:
-                print("Invalid checkpoint path", checkpoint_path)
-
-        ### lora
-        if lora_path and osp.isfile(lora_path):
-            pipeline.load_lora_weights(osp.dirname(lora_path), weight_name=osp.basename(lora_path), adapter_name="lora")
-
-        pipeline.insert_hm_modules(dtype=dtype, device=device)
+        pipeline.insert_hm_modules(dtype=dtype)
 
         return (pipeline,)
 
@@ -149,7 +169,7 @@ class HMFaceToolkitsLoader:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "gpu_id": ("INT", {"default": 0}),
+                "gpu_id": ("INT", {"default": 0, "min": -1, "max": 16}, ),
             }
         }
 
@@ -159,20 +179,20 @@ class HMFaceToolkitsLoader:
     CATEGORY = "hellomeme"
     def load_face_toolkits(self, gpu_id):
         dtype = torch.float16
-        if gpu_id < 0:
-            device = torch.device('cpu')
-        else:
-            device = torch.device(f'cuda:{gpu_id}')
+        image_encoder = CLIPVisionModelWithProjection.from_pretrained(
+                'h94/IP-Adapter', subfolder='models/image_encoder')
+        image_encoder.to(dtype=dtype).cpu()
+        pd_fpg_motion = FanEncoder.from_pretrained("songkey/pd_fgc_motion")
+        pd_fpg_motion.to(dtype=dtype).cpu()
         return (
             dict(
-                 device=device,
+                 device=get_torch_device(gpu_id),
                  dtype=dtype,
-                 pd_fpg_motion=FanEncoder.from_pretrained("songkey/pd_fgc_motion").to(dtype=dtype),
+                 pd_fpg_motion=pd_fpg_motion,
                  face_aligner=HelloCameraDemo(face_alignment_module=HelloFaceAlignment(gpu_id=gpu_id), reset=False),
                  harkit_bs=HelloARKitBSPred(gpu_id=gpu_id),
                  h3dmm=Hello3DMMPred(gpu_id=gpu_id),
-                 image_encoder=CLIPVisionModelWithProjection.from_pretrained(
-                    'h94/IP-Adapter', subfolder='models/image_encoder').to(dtype=dtype)
+                 image_encoder=image_encoder
             ),
         )
 
@@ -307,9 +327,12 @@ class HMPipelineImage:
                 "trans_ratio": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "prompt": ("STRING", {"default": DEFAULT_PROMPT}),
                 "negative_prompt": ("STRING", {"default": ''}),
-                "steps": ("INT", {"default": 25, "min": 1, "max": 1000}),
-                "seed": ("INT", {"default": -1, "min": -1, "max": 100000}),
+                "steps": ("INT", {"default": 25, "min": 1, "max": 10000,
+                                  "tooltip": "The number of steps used in the denoising process."}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff,
+                                 "tooltip": "The random seed used for creating the noise."}),
                 "guidance_scale": ("FLOAT", {"default": 2.0, "min": 0.0, "max": 100.0, "step": 0.01}),
+                "gpu_id": ("INT", {"default": 0, "min": -1, "max": 16}, ),
             },
                 "optional": {
                     "drive_exp": ("DRIVE_EXPRESSION", {"default": None},),
@@ -317,7 +340,7 @@ class HMPipelineImage:
                 }
         }
 
-    RETURN_TYPES = ("IMAGE",)
+    RETURN_TYPES = ("IMAGE", "LATENT", )
     FUNCTION = "sample"
     CATEGORY = "hellomeme"
 
@@ -332,9 +355,12 @@ class HMPipelineImage:
                prompt=DEFAULT_PROMPT,
                negative_prompt='',
                steps=25,
-               seed=-1,
-               guidance_scale=2.0
+               seed=0,
+               guidance_scale=2.0,
+               gpu_id=0
                ):
+        device = get_torch_device(gpu_id)
+
         image_np = (ref_image[0] * 255).cpu().numpy().astype(np.uint8)
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
@@ -357,12 +383,9 @@ class HMPipelineImage:
         if isinstance(drive_exp2, dict):
             drive_params.update(drive_exp2)
 
-        if seed < 0:
-            generator = torch.Generator().manual_seed(random.randint(0, 100000))
-        else:
-            generator = torch.Generator().manual_seed(seed)
+        generator = torch.Generator().manual_seed(seed)
 
-        result_img = hm_image_pipeline(
+        result_img, latents = hm_image_pipeline(
             prompt=[prompt],
             strength=1.0,
             image=image_pil,
@@ -371,9 +394,10 @@ class HMPipelineImage:
             negative_prompt=[negative_prompt],
             guidance_scale=guidance_scale,
             generator=generator,
+            device=device,
             output_type='np'
         )
-        return (torch.from_numpy(np.clip(result_img[0], 0, 1)), )
+        return (torch.from_numpy(np.clip(result_img[0], 0, 1)), dict(samples=latents), )
 
 
 class HMPipelineVideo:
@@ -389,9 +413,12 @@ class HMPipelineVideo:
                         "patch_overlap": ("INT", {"default": 4, "min": 0, "max": 5}),
                         "prompt": ("STRING", {"default": DEFAULT_PROMPT}),
                         "negative_prompt": ("STRING", {"default": ''}),
-                        "steps": ("INT", {"default": 25, "min": 1, "max": 1000}),
-                        "seed": ("INT", {"default": -1, "min": -1, "max": 100000}),
+                        "steps": ("INT", {"default": 25, "min": 1, "max": 10000,
+                                          "tooltip": "The number of steps used in the denoising process."}),
+                        "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff,
+                                         "tooltip": "The random seed used for creating the noise."}),
                         "guidance_scale": ("FLOAT", {"default": 2.0, "min": 0.0, "max": 100.0, "step": 0.01}),
+                        "gpu_id": ("INT", {"default": 0, "min": -1, "max": 16}, ),
                      },
                     "optional": {
                         "drive_exp": ("DRIVE_EXPRESSION", {"default": None},),
@@ -399,7 +426,7 @@ class HMPipelineVideo:
                     }
                 }
 
-    RETURN_TYPES = ("IMAGE",)
+    RETURN_TYPES = ("IMAGE", "LATENT", )
     FUNCTION = "sample"
     CATEGORY = "hellomeme"
 
@@ -415,9 +442,12 @@ class HMPipelineVideo:
                 prompt=DEFAULT_PROMPT,
                 negative_prompt="",
                 steps=25,
-                seed=-1,
-                guidance_scale=2.0
+                seed=0,
+                guidance_scale=2.0,
+                gpu_id=0
         ):
+        device = get_torch_device(gpu_id)
+
         image_np = (ref_image[0] * 255).cpu().numpy().astype(np.uint8)
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
@@ -432,10 +462,7 @@ class HMPipelineVideo:
 
         _, ref_trans = face_toolkits['h3dmm'].forward_params(image_np, ref_landmark)
 
-        if seed < 0:
-            generator = torch.Generator().manual_seed(random.randint(0, 100000))
-        else:
-            generator = torch.Generator().manual_seed(seed)
+        generator = torch.Generator().manual_seed(seed)
 
         drive_rot, drive_trans = drive_pose['rot'], drive_pose['trans']
         condition = gen_control_heatmaps(drive_rot, drive_trans, ref_trans, 512, trans_ratio)
@@ -446,7 +473,7 @@ class HMPipelineVideo:
         if isinstance(drive_exp2, dict):
             drive_params.update(drive_exp2)
 
-        res_frames = hm_video_pipeline(
+        res_frames, latents = hm_video_pipeline(
             prompt=[prompt],
             strength=1.0,
             image=image_pil,
@@ -456,10 +483,13 @@ class HMPipelineVideo:
             negative_prompt=[negative_prompt],
             guidance_scale=guidance_scale,
             generator=generator,
+            device=device,
             output_type='np'
         )
         res_frames = [np.clip(x[0], 0, 1) for x in res_frames]
-        return (torch.from_numpy(np.array(res_frames)), )
+        latents = rearrange(latents[0], 'c f h w -> f c h w')
+
+        return (torch.from_numpy(np.array(res_frames)), dict(samples=latents), )
 
 
 NODE_CLASS_MAPPINGS = {
