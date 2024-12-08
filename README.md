@@ -22,6 +22,10 @@
 
 
 ## 🔆 New Features/Updates
+- ☐ This update features significant changes, offering better compatibility with custom checkpoints and improved VRAM efficiency.
+
+     [![YouTube Demo](https://img.youtube.com/vi/-2s_pLAKoRg/0.jpg)](https://www.youtube.com/watch?v=-2s_pLAKoRg)
+
 - ✅ `11/29/2024` a.Optimize the algorithm; b.Add VAE selection functionality; c.Introduce a super-resolution feature.
 
      [![YouTube Demo](https://img.youtube.com/vi/fM5nyn6q02Y/0.jpg)](https://www.youtube.com/watch?v=fM5nyn6q02Y)
