@@ -22,17 +22,18 @@
 
 
 ## 🔆 New Features/Updates
-- ☐ This update features significant changes, offering better compatibility with custom checkpoints and improved VRAM efficiency.
+- ✅ `12/08/2024` Added HelloMeme V2 (select "v2" in the version option of the LoadHelloMemeImage/Video Node). Its features include:
+a. Improved expression consistency between the generated video and the driving video.
+b. Better compatibility with third-party checkpoints (*we will continuously collect compatible free third-party checkpoints and share them on this page. If you'd like to recommend one, please post it on the issue page or email us at songkey@pku.edu.cn*).
+c. Reduced VRAM usage.
 
      [![YouTube Demo](https://img.youtube.com/vi/-2s_pLAKoRg/0.jpg)](https://www.youtube.com/watch?v=-2s_pLAKoRg)
 
 - ✅ `11/29/2024` a.Optimize the algorithm; b.Add VAE selection functionality; c.Introduce a super-resolution feature.
-
-     [![YouTube Demo](https://img.youtube.com/vi/fM5nyn6q02Y/0.jpg)](https://www.youtube.com/watch?v=fM5nyn6q02Y)
+[YouTube Demo](https://www.youtube.com/watch?v=fM5nyn6q02Y)
 
 - ✅ `11/14/2024` Added the `HMControlNet2` module, which uses the `PD-FGC` motion module to extract facial expression information (`drive_exp2`); restructured the ComfyUI interface; and optimized VRAM usage.
-
-     [![YouTube Demo](https://img.youtube.com/vi/ZvoMHyRm310/0.jpg)](https://www.youtube.com/watch?v=ZvoMHyRm310)
+[YouTube Demo](https://www.youtube.com/watch?v=ZvoMHyRm310)
 
 - ✅ `11/12/2024` Added a newly fine-tuned version of [`Animatediff`](https://huggingface.co/songkey/hm_animatediff_frame12) with a patch size of 12, which uses less VRAM (Tested on 2080Ti).
 - ✅ `11/11/2024` ~~Optimized VRAM usage and added `HMVideoSimplePipeline` (`workflows/hellomeme_video_simple_workflow.json`), which doesn’t use Animatediff and can run on machines with less than 12G VRAM.~~
@@ -50,7 +51,13 @@ This repository is the official implementation of the [`HelloMeme`](https://arxi
 > 
 > **Loras** under: `ComfyUI/models/checkpoints`
 
-### workflows
+## Recommended Third-party Checkpoints/Loras
+| Name | Checkpoints/Loras | Recommenders |
+|------|-------------------|--------------|
+| [realisticVisionV60B1_v51VAE](https://civitai.com/models/4201/realistic-vision-v60-b1) | Checkpoints       | |
+| [disneyPixarCartoon_v10](https://civitai.com/models/65203/disney-pixar-cartoon-type-a) | Checkpoints             | |
+
+### Workflows
 
 | workflow file | Video Generation | Image Generation | HMControlNet | HMControlNet2 | Super-Resolution |
 |---------------|------------------|------------------|-----------|---------------|-----------------|
