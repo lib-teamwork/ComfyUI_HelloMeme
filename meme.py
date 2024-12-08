@@ -72,7 +72,9 @@ def append_pipline_weights(pipeline, checkpoint=None, lora=None, vae=None):
                 raw_stats = torch.load(checkpoint_path)
 
             if raw_stats:
-                state_dict = convert_ldm_unet_checkpoint(raw_stats, pipeline.unet_ref.config)
+                state_dict = convert_ldm_unet_checkpoint(raw_stats,
+                                                         pipeline.unet_pre.config if hasattr(pipeline, 'unet_pre')
+                                                         else pipeline.unet.config)
                 if hasattr(pipeline, 'unet_pre'):
                     pipeline.unet_pre.load_state_dict(state_dict, strict=False)
                 pipeline.unet.load_state_dict(state_dict, strict=False)
@@ -92,9 +94,8 @@ def append_pipline_weights(pipeline, checkpoint=None, lora=None, vae=None):
                 raw_vae_stats = torch.load(real_vae_path)
 
         if raw_vae_stats:
-            vae_state_dict = convert_ldm_vae_checkpoint(raw_vae_stats, pipeline.vae_decode.config)
-            if hasattr(pipeline, 'vae_decode'):
-                pipeline.vae_decode.load_state_dict(vae_state_dict, strict=True)
+            vae_state_dict = convert_ldm_vae_checkpoint(raw_vae_stats, pipeline.vae.config)
+            pipeline.vae.load_state_dict(vae_state_dict, strict=True)
 
     ### lora
     if lora and not lora.startswith('None'):
@@ -113,21 +114,22 @@ class HMImagePipelineLoader:
                 "checkpoint": (checkpoint_files, ),
                 "lora": (lora_files, ),
                 "vae": (vae_files, ),
+                "version": (['v1', 'v2'], ),
             }
         }
     RETURN_TYPES = ("HMIMAGEPIPELINE", )
     RETURN_NAMES = ("hm_image_pipeline", )
     FUNCTION = "load_pipeline"
     CATEGORY = "hellomeme"
-    def load_pipeline(self, checkpoint=None, lora=None, vae=None):
+    def load_pipeline(self, checkpoint=None, lora=None, vae=None, version='v2'):
         dtype = torch.float16
         pipeline = HMImagePipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5")
         pipeline.to(dtype=dtype)
-        pipeline.caryomitosis()
+        pipeline.caryomitosis(version=version)
 
         append_pipline_weights(pipeline, checkpoint=checkpoint, lora=lora, vae=vae)
 
-        pipeline.insert_hm_modules(dtype=dtype)
+        pipeline.insert_hm_modules(version=version, dtype=dtype)
         
         return (pipeline, )
 
@@ -142,7 +144,7 @@ class HMVideoPipelineLoader:
                 "checkpoint": (checkpoint_files, ),
                 "lora": (lora_files, ),
                 "vae": (vae_files, ),
-                "patch_frames": ([12], ),
+                "version": (['v1', 'v2'], ),
             }
         }
 
@@ -151,15 +153,15 @@ class HMVideoPipelineLoader:
     FUNCTION = "load_pipeline"
     CATEGORY = "hellomeme"
 
-    def load_pipeline(self, checkpoint=None, lora=None, vae=None, patch_frames=12):
+    def load_pipeline(self, checkpoint=None, lora=None, vae=None, version='v2'):
         dtype = torch.float16
         pipeline = HMVideoPipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5")
         pipeline.to(dtype=dtype)
-        pipeline.caryomitosis(patch_frames=patch_frames)
+        pipeline.caryomitosis(version=version)
 
         append_pipline_weights(pipeline, checkpoint=checkpoint, lora=lora, vae=vae)
 
-        pipeline.insert_hm_modules(dtype=dtype)
+        pipeline.insert_hm_modules(version=version, dtype=dtype)
 
         return (pipeline,)
 

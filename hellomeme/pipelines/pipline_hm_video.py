@@ -21,37 +21,35 @@ from diffusers.utils.torch_utils import randn_tensor
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import retrieve_timesteps, retrieve_latents
 from diffusers import StableDiffusionImg2ImgPipeline, MotionAdapter, EulerDiscreteScheduler
 
-from ..models import HMDenoising3D, HMDenoisingMotion, HMControlNet, HMControlNet2
+from ..models import HMDenoising3D, HMDenoisingMotion, HMControlNet, HMControlNet2, HMV2ControlNet, HMV2ControlNet2
 from ..models import HMReferenceAdapter
 from ..utils import dicts_to_device, cat_dicts, cat_dicts_ref
 
 class HMVideoPipeline(StableDiffusionImg2ImgPipeline):
-    def caryomitosis(self, patch_frames=12, **kwargs):
+    def caryomitosis(self, version, **kwargs):
         if hasattr(self, "unet_ref"):
             del self.unet_ref
-        self.unet_ref = HMDenoising3D.from_unet2d(self.unet)
-        self.unet_ref.cpu()
         self.unet_pre = HMDenoising3D.from_unet2d(self.unet)
         self.unet_pre.cpu()
 
         self.num_frames = 12
-        adapter = MotionAdapter.from_pretrained("songkey/hm_animatediff_frame12", torch_dtype=torch.float16)
+        if version == 'v1':
+            adapter = MotionAdapter.from_pretrained("songkey/hm_animatediff_frame12", torch_dtype=torch.float16)
+        else:
+            adapter = MotionAdapter.from_pretrained("songkey/hm2_animatediff_frame12", torch_dtype=torch.float16)
         unet = HMDenoisingMotion.from_unet2d(unet=self.unet, motion_adapter=adapter, load_weights=True)
         # todo: 不够优雅
         del self.unet
         self.unet = unet
 
-        self.vae_decode = copy.deepcopy(self.vae)
-
-    def insert_hm_modules(self, dtype):
-        hm_adapter = HMReferenceAdapter.from_pretrained('songkey/hm_reference')
+    def insert_hm_modules(self, version, dtype):
+        if version == 'v1':
+            hm_adapter = HMReferenceAdapter.from_pretrained('songkey/hm_reference')
+        else:
+            hm_adapter = HMReferenceAdapter.from_pretrained('songkey/hm2_reference')
         if isinstance(self.unet, HMDenoisingMotion):
             self.unet.insert_reference_adapter(hm_adapter)
             self.unet.to(device='cpu', dtype=dtype).eval()
-
-        if hasattr(self, "unet_ref"):
-            self.unet_ref.insert_reference_adapter(hm_adapter)
-            self.unet_ref.to(device='cpu', dtype=dtype).eval()
 
         if hasattr(self, "unet_pre"):
             self.unet_pre.insert_reference_adapter(hm_adapter)
@@ -59,16 +57,22 @@ class HMVideoPipeline(StableDiffusionImg2ImgPipeline):
 
         if hasattr(self, "mp_control"):
             del self.mp_control
-        self.mp_control = HMControlNet.from_pretrained('songkey/hm_control')
+        if version == 'v1':
+            self.mp_control = HMControlNet.from_pretrained('songkey/hm_control')
+        else:
+            self.mp_control = HMV2ControlNet.from_pretrained('songkey/hm2_control')
+
         self.mp_control.to(device='cpu', dtype=dtype).eval()
 
         if hasattr(self, "mp_control2"):
             del self.mp_control2
-        self.mp_control2 = HMControlNet2.from_pretrained('songkey/hm_control2')
+        if version == 'v1':
+            self.mp_control2 = HMControlNet2.from_pretrained('songkey/hm_control2')
+        else:
+            self.mp_control2 = HMV2ControlNet2.from_pretrained('songkey/hm2_control2')
         self.mp_control2.to(device='cpu', dtype=dtype).eval()
 
         self.vae.to(device='cpu', dtype=dtype).eval()
-        self.vae_decode.to(device='cpu', dtype=dtype).eval()
         self.text_encoder.to(device='cpu', dtype=dtype).eval()
 
     @torch.no_grad()
@@ -218,15 +222,14 @@ class HMVideoPipeline(StableDiffusionImg2ImgPipeline):
                 guidance_scale_tensor, embedding_dim=self.unet.config.time_cond_proj_dim
             ).to(device=device, dtype=prompt_embeds.dtype)
 
-        self.unet_ref.to(device=device)
-        cached_res = self.unet_ref(
+        self.unet_pre.to(device=device)
+        cached_res = self.unet_pre(
             torch.cat([torch.zeros_like(ref_latents), ref_latents], dim=0) if
             self.do_classifier_free_guidance else ref_latents,
             0,
             encoder_hidden_states=prompt_embeds,
             return_dict=False,
         )[1]
-        self.unet_ref.cpu()
 
         pre_latents = []
         control_latents = []
@@ -234,7 +237,6 @@ class HMVideoPipeline(StableDiffusionImg2ImgPipeline):
         base_noise = randn_tensor([batch_size, c, 1, h, w], dtype=prompt_embeds.dtype, generator=generator).to(device=device)
         self.mp_control.to(device=device)
         self.mp_control2.to(device=device)
-        self.unet_pre.to(device=device)
         with self.progress_bar(total=raw_video_len) as progress_bar:
             for idx in range(raw_video_len):
                 condition = drive_params['condition'][:, :, idx:idx+1].clone().to(device=device)
@@ -313,7 +315,6 @@ class HMVideoPipeline(StableDiffusionImg2ImgPipeline):
         self.mp_control.cpu()
         self.mp_control2.cpu()
         self.unet_pre.cpu()
-        self.unet_ref.cpu()
 
         chunk_size = self.num_frames
         chunk_overlap = min(max(0, chunk_overlap), chunk_size // 2 - 1)
@@ -421,15 +422,15 @@ class HMVideoPipeline(StableDiffusionImg2ImgPipeline):
         self.unet.cpu()
         latents_res = latents / self.vae.config.scaling_factor
 
-        self.vae_decode.to(device=device)
+        self.vae.to(device=device)
         res_frames = []
         with self.progress_bar(total=raw_video_len) as progress_bar:
             for i in range(raw_video_len):
-                ret_tensor = self.vae_decode.decode(latents_res[:, :, i, :, :].to(device=device),
+                ret_tensor = self.vae.decode(latents_res[:, :, i, :, :].to(device=device),
                                              return_dict=False, generator=generator)[0]
                 ret_image = self.image_processor.postprocess(ret_tensor, output_type=output_type)
                 res_frames.append(ret_image)
                 progress_bar.set_description(f"VAE DECODE")
                 progress_bar.update()
-        self.vae_decode.cpu()
+        self.vae.cpu()
         return res_frames, latents_res

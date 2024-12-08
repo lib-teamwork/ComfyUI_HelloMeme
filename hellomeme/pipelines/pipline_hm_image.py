@@ -22,42 +22,44 @@ from diffusers.pipelines.stable_diffusion.pipeline_output import StableDiffusion
 from diffusers import StableDiffusionImg2ImgPipeline
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import retrieve_timesteps, retrieve_latents
 
-from ..models import HMDenoising3D, HMControlNet, HMControlNet2
+from ..models import HMDenoising3D, HMControlNet, HMControlNet2, HMV2ControlNet, HMV2ControlNet2
 from ..models import HMReferenceAdapter
 
 class HMImagePipeline(StableDiffusionImg2ImgPipeline):
     def caryomitosis(self, **kwargs):
-        if not hasattr(self, "unet_ref"):
-            self.unet_ref = HMDenoising3D.from_unet2d(self.unet)
-            self.unet_ref.cpu()
         if not isinstance(self.unet, HMDenoising3D):
             unet = HMDenoising3D.from_unet2d(unet=self.unet)
             # todo: 不够优雅
             del self.unet
             self.unet = unet
             self.unet.cpu()
-        self.vae_decode = copy.deepcopy(self.vae)
 
-    def insert_hm_modules(self, dtype):
+    def insert_hm_modules(self, version, dtype):
         if isinstance(self.unet, HMDenoising3D):
-            hm_adapter = HMReferenceAdapter.from_pretrained('songkey/hm_reference')
+            if version == 'v1':
+                hm_adapter = HMReferenceAdapter.from_pretrained('songkey/hm_reference')
+            else:
+                hm_adapter = HMReferenceAdapter.from_pretrained('songkey/hm2_reference')
             self.unet.insert_reference_adapter(hm_adapter)
-            self.unet_ref.insert_reference_adapter(hm_adapter)
-            self.unet_ref.to(device='cpu', dtype=dtype).eval()
             self.unet.to(device='cpu', dtype=dtype).eval()
 
         if hasattr(self, "mp_control"):
             del self.mp_control
-        self.mp_control = HMControlNet.from_pretrained('songkey/hm_control')
+        if version == 'v1':
+            self.mp_control = HMControlNet.from_pretrained('songkey/hm_control')
+        else:
+            self.mp_control = HMV2ControlNet.from_pretrained('songkey/hm2_control')
         self.mp_control.to(device='cpu', dtype=dtype).eval()
 
         if hasattr(self, "mp_control2"):
             del self.mp_control2
-        self.mp_control2 = HMControlNet2.from_pretrained('songkey/hm_control2')
+        if version == 'v1':
+            self.mp_control2 = HMControlNet2.from_pretrained('songkey/hm_control2')
+        else:
+            self.mp_control2 = HMV2ControlNet2.from_pretrained('songkey/hm2_control2')
         self.mp_control2.to(device='cpu', dtype=dtype).eval()
 
         self.vae.to(device='cpu', dtype=dtype).eval()
-        self.vae_decode.to(device='cpu', dtype=dtype).eval()
         self.text_encoder.to(device='cpu', dtype=dtype).eval()
 
     @torch.no_grad()
@@ -230,15 +232,13 @@ class HMImagePipeline(StableDiffusionImg2ImgPipeline):
         )
 
         latent_model_input = torch.cat([torch.zeros_like(ref_latents), ref_latents]) if self.do_classifier_free_guidance else ref_latents
-        self.unet_ref.to(device=device)
-        cached_res = self.unet_ref(
+        self.unet.to(device=device)
+        cached_res = self.unet(
             latent_model_input.unsqueeze(2),
             0,
             encoder_hidden_states=prompt_embeds,
-            # control_hidden_states=control_latents,
             return_dict=False,
         )[1]
-        self.unet_ref.cpu()
 
         # 7.2 Optionally get Guidance Scale Embedding
         timestep_cond = None
@@ -304,14 +304,14 @@ class HMImagePipeline(StableDiffusionImg2ImgPipeline):
 
         self.unet.cpu()
 
-        self.vae_decode.to(device=device)
+        self.vae.to(device=device)
         if not output_type == "latent":
-            image = self.vae_decode.decode(latents / self.vae.config.scaling_factor, return_dict=False, generator=generator)[
+            image = self.vae.decode(latents / self.vae.config.scaling_factor, return_dict=False, generator=generator)[
                 0
             ]
         else:
             image = latents
-        self.vae_decode.cpu()
+        self.vae.cpu()
 
         do_denormalize = [True] * image.shape[0]
 
