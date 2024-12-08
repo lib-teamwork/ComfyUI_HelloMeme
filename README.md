@@ -22,7 +22,7 @@
 
 
 ## 🔆 New Features/Updates
-- ✅ `12/08/2024` Added HelloMeme V2 (select "v2" in the version option of the LoadHelloMemeImage/Video Node). Its features include:
+- ✅ `12/08/2024` Added **HelloMemeV2** (select "v2" in the version option of the LoadHelloMemeImage/Video Node). Its features include:
 a. Improved expression consistency between the generated video and the driving video.
 b. Better compatibility with third-party checkpoints (*we will continuously collect compatible free third-party checkpoints and share them on this page. If you'd like to recommend one, please post it on the issue page or email us at songkey@pku.edu.cn*).
 c. Reduced VRAM usage.
