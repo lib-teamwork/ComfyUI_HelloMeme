@@ -95,7 +95,10 @@ def append_pipline_weights(pipeline, checkpoint=None, lora=None, vae=None):
 
         if raw_vae_stats:
             vae_state_dict = convert_ldm_vae_checkpoint(raw_vae_stats, pipeline.vae.config)
-            pipeline.vae.load_state_dict(vae_state_dict, strict=True)
+            if hasattr(pipeline, 'vae_decode'):
+                pipeline.vae_decode.load_state_dict(vae_state_dict, strict=True)
+            else:
+                pipeline.vae.load_state_dict(vae_state_dict, strict=True)
 
     ### lora
     if lora and not lora.startswith('None'):
