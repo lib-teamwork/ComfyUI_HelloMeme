@@ -224,12 +224,14 @@ class CropPortrait:
         # print(image_np.shape)
         face_toolkits['face_aligner'].reset_track()
         faces = face_toolkits['face_aligner'].forward(image_np)
-        assert len(faces) > 0
-        face = sorted(faces, key=lambda x: (x['face_rect'][2] - x['face_rect'][0]) * (
-                x['face_rect'][3] - x['face_rect'][1]))[-1]
-        ref_landmark = face['pre_kpt_222']
+        if len(faces) > 0:
+            face = sorted(faces, key=lambda x: (x['face_rect'][2] - x['face_rect'][0]) * (
+                    x['face_rect'][3] - x['face_rect'][1]))[-1]
+            ref_landmark = face['pre_kpt_222']
 
-        new_image = crop_and_resize(image_np[np.newaxis, :,:,:], ref_landmark[np.newaxis, :,:], 512, crop=True)[0]
+            new_image = crop_and_resize(image_np[np.newaxis, :,:,:], ref_landmark[np.newaxis, :,:], 512, crop=True)[0]
+        else:
+            new_image = image_np[np.newaxis, :,:,:]
         new_image = cv2.cvtColor(new_image[0], cv2.COLOR_RGB2BGR)
         return (torch.from_numpy(new_image[np.newaxis, :,:,:]).float() / 255., )
 
