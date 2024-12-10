@@ -13,6 +13,7 @@ from einops import rearrange
 
 import importlib.metadata
 import folder_paths
+import logging
 
 cur_dir = osp.dirname(osp.abspath(__file__))
 
@@ -220,8 +221,10 @@ class CropPortrait:
 
     def crop_portrait(self, image, face_toolkits):
         image_np = cv2.cvtColor((image[0] * 255).cpu().numpy().astype(np.uint8), cv2.COLOR_BGR2RGB)
-        # image_np = cv2.resize(image_np, (512, 512))
-        # print(image_np.shape)
+
+        if min(image_np.shape[:2]) < 512:
+            raise Exception(f'Image size is too small -> min{image_np.shape[:2]} < 512')
+
         face_toolkits['face_aligner'].reset_track()
         faces = face_toolkits['face_aligner'].forward(image_np)
         if len(faces) > 0:
@@ -229,9 +232,11 @@ class CropPortrait:
                     x['face_rect'][3] - x['face_rect'][1]))[-1]
             ref_landmark = face['pre_kpt_222']
 
-            new_image = crop_and_resize(image_np[np.newaxis, :,:,:], ref_landmark[np.newaxis, :,:], 512, crop=True)[0]
+            new_image, new_landmark = crop_and_resize(image_np[np.newaxis, :,:,:], ref_landmark[np.newaxis, :,:], 512, crop=True)
+            # for x, y in new_landmark[0]:
+            #     cv2.circle(new_image[0], (int(x), int(y)), 2, (0, 255, 0), -1)
         else:
-            new_image = image_np[np.newaxis, :,:,:]
+            raise Exception('No face detected')
         new_image = cv2.cvtColor(new_image[0], cv2.COLOR_RGB2BGR)
         return (torch.from_numpy(new_image[np.newaxis, :,:,:]).float() / 255., )
 
@@ -254,9 +259,11 @@ class GetFaceLandmarks:
     def get_face_landmarks(self, face_toolkits, images):
         frame_list = [cv2.cvtColor((frame * 255).cpu().numpy().astype(np.uint8), cv2.COLOR_BGR2RGB) for frame in images]
         frame_num = len(frame_list)
-        assert frame_num > 0
+        if frame_num == 0:
+            raise Exception('No image detected')
         _, landmark_list = det_landmarks(face_toolkits['face_aligner'], frame_list)
-        assert len(frame_list) == frame_num
+        if len(frame_list) != frame_num:
+            raise Exception('Not all images have face detected!')
 
         return (torch.from_numpy(landmark_list).float(), )
 
@@ -372,12 +379,16 @@ class HMPipelineImage:
         device = get_torch_device(gpu_id)
 
         image_np = (ref_image[0] * 255).cpu().numpy().astype(np.uint8)
+        if min(image_np.shape[:2]) < 512:
+            raise Exception(f'Reference image size is too small -> min{image_np.shape[:2]} < 512')
+
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
 
         face_toolkits['face_aligner'].reset_track()
         faces = face_toolkits['face_aligner'].forward(image_np)
-        assert len(faces) > 0
+        if len(faces) == 0: raise Exception('No face detected')
+
         face = sorted(faces, key=lambda x: (x['face_rect'][2] - x['face_rect'][0]) * (
                 x['face_rect'][3] - x['face_rect'][1]))[-1]
         ref_landmark = face['pre_kpt_222']
@@ -459,13 +470,17 @@ class HMPipelineVideo:
         device = get_torch_device(gpu_id)
 
         image_np = (ref_image[0] * 255).cpu().numpy().astype(np.uint8)
+        if min(image_np.shape[:2]) < 512:
+            raise Exception(f'Reference image size is too small -> min{image_np.shape[:2]} < 512')
+
         image_np = cv2.resize(image_np, (512, 512))
         image_pil = Image.fromarray(image_np)
 
         face_toolkits['face_aligner'].reset_track()
         faces = face_toolkits['face_aligner'].forward(image_np)
         face_toolkits['face_aligner'].reset_track()
-        assert len(faces) > 0
+        if len(faces) == 0: raise Exception('No face detected')
+
         face = sorted(faces, key=lambda x: (x['face_rect'][2] - x['face_rect'][0]) * (
                 x['face_rect'][3] - x['face_rect'][1]))[-1]
         ref_landmark = face['pre_kpt_222']

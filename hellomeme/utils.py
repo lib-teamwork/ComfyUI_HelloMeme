@@ -308,9 +308,9 @@ def crop_and_resize(frames, landmarks, save_size=512, crop=True):
         all_tl, all_br = np.min(landmarks, axis=1), np.max(landmarks, axis=1)
         mean_wh = np.mean(all_br - all_tl, axis=0)
         tl, br = np.min(all_tl, axis=0), np.max(all_br, axis=0)
-        new_size = min(max(mean_wh) * 2.5, min(H, W) - 1)
+        new_size = min(max(mean_wh) * 2.3, min(H, W) - 1)
         fcenter = (tl + br) * 0.5
-        fcenter[1] -= new_size * 0.12
+        fcenter[1] -= new_size * 0.115
         ftl = fcenter - new_size * 0.5
         fbr = fcenter + new_size * 0.5
 
@@ -333,15 +333,8 @@ def crop_and_resize(frames, landmarks, save_size=512, crop=True):
         opt_tl = (opt_center - opt_size * 0.5).astype(int)
         opt_br = (opt_center + opt_size * 0.5).astype(int)
 
-        # print('H, W', H, W)
-        # print('opt_center', opt_center)
-        # print('opt_size', opt_size)
-        # print('opt_tl', opt_tl)
-        # print('opt_br', opt_br)
-
         frames = frames[:, opt_tl[1]:opt_br[1], opt_tl[0]:opt_br[0], :].copy()
 
-        # print('frames', frames.shape)
         landmarks = landmarks - opt_tl
         ratio = save_size / (opt_br - opt_tl)
     else:
