@@ -220,7 +220,7 @@ class CropPortrait:
 
     def crop_portrait(self, image, face_toolkits):
         image_np = cv2.cvtColor((image[0] * 255).cpu().numpy().astype(np.uint8), cv2.COLOR_BGR2RGB)
-        image_np = cv2.resize(image_np, (512, 512))
+        # image_np = cv2.resize(image_np, (512, 512))
         # print(image_np.shape)
         face_toolkits['face_aligner'].reset_track()
         faces = face_toolkits['face_aligner'].forward(image_np)

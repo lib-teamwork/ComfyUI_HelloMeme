@@ -310,10 +310,9 @@ def crop_and_resize(frames, landmarks, save_size=512, crop=True):
         tl, br = np.min(all_tl, axis=0), np.max(all_br, axis=0)
         new_size = min(max(mean_wh) * 2.5, min(H, W) - 1)
         fcenter = (tl + br) * 0.5
+        fcenter[1] -= new_size * 0.12
         ftl = fcenter - new_size * 0.5
-        ftl[1] -= mean_wh[1] * 0.2
         fbr = fcenter + new_size * 0.5
-        fbr[1] -= mean_wh[1] * 0.2
 
         if ftl[0] < 0:
             fbr[0] -= ftl[0]
@@ -328,12 +327,23 @@ def crop_and_resize(frames, landmarks, save_size=512, crop=True):
         if fbr[1] >= H:
             ftl[1] -= fbr[1] - H + 1
             fbr[1] = H - 1
-        ftl = ftl.astype(int)
-        fbr = (fbr - ftl)[0].astype(int) + ftl
 
-        frames = frames[:, ftl[1]:fbr[1], ftl[0]:fbr[0], :].copy()
-        landmarks = landmarks - ftl
-        ratio = save_size / (fbr - ftl)
+        opt_center = (ftl + fbr) * 0.5
+        opt_size = np.floor(fbr - ftl).min()
+        opt_tl = (opt_center - opt_size * 0.5).astype(int)
+        opt_br = (opt_center + opt_size * 0.5).astype(int)
+
+        # print('H, W', H, W)
+        # print('opt_center', opt_center)
+        # print('opt_size', opt_size)
+        # print('opt_tl', opt_tl)
+        # print('opt_br', opt_br)
+
+        frames = frames[:, opt_tl[1]:opt_br[1], opt_tl[0]:opt_br[0], :].copy()
+
+        # print('frames', frames.shape)
+        landmarks = landmarks - opt_tl
+        ratio = save_size / (opt_br - opt_tl)
     else:
         ratio = (save_size / W, save_size / H)
     landmarks = landmarks * ratio
