@@ -63,7 +63,6 @@ class HMVideoPipeline(StableDiffusionImg2ImgPipeline):
             self.unet_pre.to(device='cpu', dtype=dtype).eval()
 
         if hasattr(self, "unet_ref"):
-            self.unet_ref.insert_reference_adapter(hm_adapter)
             self.unet_ref.to(device='cpu', dtype=dtype).eval()
 
         if hasattr(self, "mp_control"):

@@ -27,12 +27,19 @@ from ..models import HMReferenceAdapter
 
 class HMImagePipeline(StableDiffusionImg2ImgPipeline):
     def caryomitosis(self, **kwargs):
+        if hasattr(self, "unet_ref"):
+            del self.unet_ref
+        self.unet_ref = HMDenoising3D.from_unet2d(self.unet)
+        self.unet_ref.cpu()
+
         if not isinstance(self.unet, HMDenoising3D):
             unet = HMDenoising3D.from_unet2d(unet=self.unet)
             # todo: 不够优雅
             del self.unet
             self.unet = unet
             self.unet.cpu()
+
+        self.vae_decode = copy.deepcopy(self.vae)
 
     def insert_hm_modules(self, version, dtype):
         if isinstance(self.unet, HMDenoising3D):
@@ -42,6 +49,9 @@ class HMImagePipeline(StableDiffusionImg2ImgPipeline):
                 hm_adapter = HMReferenceAdapter.from_pretrained('songkey/hm2_reference')
             self.unet.insert_reference_adapter(hm_adapter)
             self.unet.to(device='cpu', dtype=dtype).eval()
+
+        if hasattr(self, "unet_ref"):
+            self.unet_ref.to(device='cpu', dtype=dtype).eval()
 
         if hasattr(self, "mp_control"):
             del self.mp_control
@@ -60,6 +70,7 @@ class HMImagePipeline(StableDiffusionImg2ImgPipeline):
         self.mp_control2.to(device='cpu', dtype=dtype).eval()
 
         self.vae.to(device='cpu', dtype=dtype).eval()
+        self.vae_decode.to(device='cpu', dtype=dtype).eval()
         self.text_encoder.to(device='cpu', dtype=dtype).eval()
 
     @torch.no_grad()
@@ -232,13 +243,14 @@ class HMImagePipeline(StableDiffusionImg2ImgPipeline):
         )
 
         latent_model_input = torch.cat([torch.zeros_like(ref_latents), ref_latents]) if self.do_classifier_free_guidance else ref_latents
-        self.unet.to(device=device)
-        cached_res = self.unet(
+        self.unet_ref.to(device=device)
+        cached_res = self.unet_ref(
             latent_model_input.unsqueeze(2),
             0,
             encoder_hidden_states=prompt_embeds,
             return_dict=False,
         )[1]
+        self.unet_ref.cpu()
 
         # 7.2 Optionally get Guidance Scale Embedding
         timestep_cond = None
@@ -304,14 +316,14 @@ class HMImagePipeline(StableDiffusionImg2ImgPipeline):
 
         self.unet.cpu()
 
-        self.vae.to(device=device)
+        self.vae_decode.to(device=device)
         if not output_type == "latent":
-            image = self.vae.decode(latents / self.vae.config.scaling_factor, return_dict=False, generator=generator)[
+            image = self.vae_decode.decode(latents / self.vae.config.scaling_factor, return_dict=False, generator=generator)[
                 0
             ]
         else:
             image = latents
-        self.vae.cpu()
+        self.vae_decode.cpu()
 
         do_denormalize = [True] * image.shape[0]
 
