@@ -15,6 +15,9 @@ import cv2
 from huggingface_hub import hf_hub_download
 from .utils import get_warp_mat_bbox_by_gt_pts_float, create_onnx_session
 
+from configs.config import get_juicefs_full_path_safemode
+from configs.node_fields import ComfyUI_HelloMeme_Mapping
+
 def crop_transl_to_full_transl(crop_trans, crop_center, scale, full_center, focal_length):
     """
     :param crop_trans: (3), float
@@ -37,7 +40,9 @@ def crop_transl_to_full_transl(crop_trans, crop_center, scale, full_center, foca
 
 class Hello3DMMPred(object):
     def __init__(self, gpu_id=None):
-        self.deep3d_pred_net = create_onnx_session(hf_hub_download('songkey/hello_group_facemodel', filename='hello_3dmm.onnx'), gpu_id=gpu_id)
+        #liblib adapter
+        # self.deep3d_pred_net = create_onnx_session(hf_hub_download('songkey/hello_group_facemodel', filename='hello_3dmm.onnx'), gpu_id=gpu_id)
+        self.deep3d_pred_net = create_onnx_session(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"songkey--hello_group_facemodel/hello_3dmm.onnx"), gpu_id=gpu_id)
         self.deep3d_pred_net_input_name = self.deep3d_pred_net.get_inputs()[0].name
         self.deep3d_pred_net_output_name = [output.name for output in self.deep3d_pred_net.get_outputs()]
 

@@ -15,6 +15,9 @@ import importlib.metadata
 import folder_paths
 import logging
 
+from configs.config import get_juicefs_full_path_safemode
+from configs.node_fields import ComfyUI_HelloMeme_Mapping
+
 cur_dir = osp.dirname(osp.abspath(__file__))
 
 installed_packages = [package.name for package in importlib.metadata.distributions()]
@@ -58,6 +61,7 @@ def get_models_files():
 
     return ['SD1.5'] + checkpoint_files, ['same as checkpoint', 'SD1.5 default vae'] + vae_files, ['None'] + lora_files
 
+# liblib adapter 注意，lib的模型由模型页加载而来，VAE也是有限集合。故内部的HelloMeme特殊处理需要纠正
 def append_pipline_weights(pipeline, checkpoint=None, lora=None, vae=None, stylize='x1'):
     ### load customized checkpoint or lora here:
     ## checkpoints
@@ -88,6 +92,9 @@ def append_pipline_weights(pipeline, checkpoint=None, lora=None, vae=None, styli
             real_vae_path = folder_paths.get_full_path_or_raise("checkpoints", vae.replace("[checkpoint] ", ""))
         elif vae.startswith("[vae] "):
             real_vae_path = folder_paths.get_full_path_or_raise("vae", vae.replace("[vae] ", ""))
+        elif vae is not None:# liblib adapter 注意，lib前端传过来的，不会带有 vae]
+            if osp.exists(vae):
+                real_vae_path = vae
         if osp.isfile(real_vae_path):
             print("Loading vae from", real_vae_path)
             if real_vae_path.endswith('.safetensors'):
@@ -129,7 +136,9 @@ class HMImagePipelineLoader:
     CATEGORY = "hellomeme"
     def load_pipeline(self, checkpoint=None, lora=None, vae=None, version='v2', stylize='x1'):
         dtype = torch.float16
-        pipeline = HMImagePipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5")
+        #lialib adapter
+        # pipeline = HMImagePipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5")
+        pipeline = HMImagePipeline.from_pretrained(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"stable-diffusion-v1-5"))
         pipeline.to(dtype=dtype)
         pipeline.caryomitosis(version=version)
 
@@ -162,7 +171,9 @@ class HMVideoPipelineLoader:
 
     def load_pipeline(self, checkpoint=None, lora=None, vae=None, version='v2', stylize='x1'):
         dtype = torch.float16
-        pipeline = HMVideoPipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5")
+        #liblib adapter
+        # pipeline = HMVideoPipeline.from_pretrained("stable-diffusion-v1-5/stable-diffusion-v1-5")
+        pipeline = HMVideoPipeline.from_pretrained(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"stable-diffusion-v1-5"))
         pipeline.to(dtype=dtype)
         pipeline.caryomitosis(version=version)
 
@@ -188,10 +199,13 @@ class HMFaceToolkitsLoader:
     CATEGORY = "hellomeme"
     def load_face_toolkits(self, gpu_id):
         dtype = torch.float16
-        image_encoder = CLIPVisionModelWithProjection.from_pretrained(
-                'h94/IP-Adapter', subfolder='models/image_encoder')
+        #liblib adapter
+        # image_encoder = CLIPVisionModelWithProjection.from_pretrained(
+        #         'h94/IP-Adapter', subfolder='models/image_encoder')
+        image_encoder = CLIPVisionModelWithProjection.from_pretrained(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"h94--IP-Adapter/models/image_encoder"))
         image_encoder.to(dtype=dtype).cpu()
-        pd_fpg_motion = FanEncoder.from_pretrained("songkey/pd_fgc_motion")
+        # pd_fpg_motion = FanEncoder.from_pretrained("songkey/pd_fgc_motion")
+        pd_fpg_motion = FanEncoder.from_pretrained(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"songkey--pd_fgc_motion"))
         pd_fpg_motion.to(dtype=dtype).cpu()
         return (
             dict(
