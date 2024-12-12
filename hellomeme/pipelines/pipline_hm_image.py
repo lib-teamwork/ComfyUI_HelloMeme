@@ -25,6 +25,9 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img impo
 from ..models import HMDenoising3D, HMControlNet, HMControlNet2, HMV2ControlNet, HMV2ControlNet2
 from ..models import HMReferenceAdapter
 
+from configs.config import get_juicefs_full_path_safemode
+from configs.node_fields import ComfyUI_HelloMeme_Mapping
+
 class HMImagePipeline(StableDiffusionImg2ImgPipeline):
     def caryomitosis(self, **kwargs):
         if hasattr(self, "unet_ref"):
@@ -44,9 +47,13 @@ class HMImagePipeline(StableDiffusionImg2ImgPipeline):
     def insert_hm_modules(self, version, dtype):
         if isinstance(self.unet, HMDenoising3D):
             if version == 'v1':
-                hm_adapter = HMReferenceAdapter.from_pretrained('songkey/hm_reference')
+                #liblib adapter
+                # hm_adapter = HMReferenceAdapter.from_pretrained('songkey/hm_reference')
+                hm_adapter = HMReferenceAdapter.from_pretrained(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"songkey--hm_reference"))
             else:
-                hm_adapter = HMReferenceAdapter.from_pretrained('songkey/hm2_reference')
+                #liblib adapter
+                # hm_adapter = HMReferenceAdapter.from_pretrained('songkey/hm2_reference')
+                hm_adapter = HMReferenceAdapter.from_pretrained(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"songkey--hm2_reference"))
             self.unet.insert_reference_adapter(hm_adapter)
             self.unet.to(device='cpu', dtype=dtype).eval()
 
@@ -56,17 +63,25 @@ class HMImagePipeline(StableDiffusionImg2ImgPipeline):
         if hasattr(self, "mp_control"):
             del self.mp_control
         if version == 'v1':
-            self.mp_control = HMControlNet.from_pretrained('songkey/hm_control')
+            #liblib adapter
+            # self.mp_control = HMControlNet.from_pretrained('songkey/hm_control')
+            self.mp_control = HMControlNet.from_pretrained(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"songkey--hm_control"))
         else:
-            self.mp_control = HMV2ControlNet.from_pretrained('songkey/hm2_control')
+            #liblib adapter
+            # self.mp_control = HMV2ControlNet.from_pretrained('songkey/hm2_control')
+            self.mp_control = HMV2ControlNet.from_pretrained(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"songkey--hm2_control"))
         self.mp_control.to(device='cpu', dtype=dtype).eval()
 
         if hasattr(self, "mp_control2"):
             del self.mp_control2
         if version == 'v1':
-            self.mp_control2 = HMControlNet2.from_pretrained('songkey/hm_control2')
+            #liblib adapter
+            # self.mp_control2 = HMControlNet2.from_pretrained('songkey/hm_control2')
+            self.mp_control2 = HMControlNet2.from_pretrained(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"songkey--hm_control2"))
         else:
-            self.mp_control2 = HMV2ControlNet2.from_pretrained('songkey/hm2_control2')
+            #liblib adapter
+            # self.mp_control2 = HMV2ControlNet2.from_pretrained('songkey/hm2_control2')
+            self.mp_control2 = HMV2ControlNet2.from_pretrained(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"songkey--hm2_control2"))
         self.mp_control2.to(device='cpu', dtype=dtype).eval()
 
         self.vae.to(device='cpu', dtype=dtype).eval()

@@ -11,9 +11,14 @@ import cv2
 from huggingface_hub import hf_hub_download
 from .utils import create_onnx_session, get_warp_mat_bbox_by_gt_pts_float
 
+from configs.config import get_juicefs_full_path_safemode
+from configs.node_fields import ComfyUI_HelloMeme_Mapping
+
 class HelloARKitBSPred(object):
     def __init__(self, gpu_id=0):
-        self.face_rig_net = create_onnx_session(hf_hub_download('songkey/hello_group_facemodel', filename='hello_arkit_blendshape.onnx'), gpu_id=gpu_id)
+        #liblib adapter
+        # self.face_rig_net = create_onnx_session(hf_hub_download('songkey/hello_group_facemodel', filename='hello_arkit_blendshape.onnx'), gpu_id=gpu_id)
+        self.face_rig_net = create_onnx_session(get_juicefs_full_path_safemode(ComfyUI_HelloMeme_Mapping,"songkey--hello_group_facemodel/hello_arkit_blendshape.onnx"), gpu_id=gpu_id)
         self.onnx_input_name = self.face_rig_net.get_inputs()[0].name
         self.onnx_output_name = [output.name for output in self.face_rig_net.get_outputs()]
         self.image_size = 224
