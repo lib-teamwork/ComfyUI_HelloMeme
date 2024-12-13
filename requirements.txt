@@ -1,0 +1,11 @@
+diffusers
+transformers
+einops
+opencv-python
+tqdm
+pillow
+onnxruntime-gpu
+onnx
+safetensors
+accelerate
+peft
